@@ -2,7 +2,6 @@ from runSimulations import *
 
 allTangSumLeft = []
 tangSumLeft = [0, 0]
-errorListLeft = []
 sumOfSquareActivitiesListLeft = []
 activListRight = []
 allTangSumRight = [0, 0]
@@ -11,7 +10,25 @@ errorListRight = []
 sumOfSquareActivitiesListRight = []
 
 
-def fDirectionCoding(leftCortex, rightCortex, newdAngle, N):
+def fDirectionCoding(leftCortex, rightCortex, newdAngle):
+
+    """Generates simulations and saves json files of final model state
+
+    Parameters:
+        leftCortex (CortexNet): set of neurons of class Net in leftCortex
+        rightCortex (CortexNet): set of neurons of class Net in rightCortex
+        newdAngle (float): target direction angle
+
+    Returns:
+        directionRight:
+        directionLeft:
+        allTangSumRight:
+        allTangSumLeft:
+        errorRight:
+        errorLeft:
+        v1L:
+        v1:
+    """
 
     vxsLeft = []
     vysLeft = []
@@ -81,11 +98,28 @@ def fDirectionCoding(leftCortex, rightCortex, newdAngle, N):
     v1L = v1L / (np.sqrt(v1L[0]**2 + v1L[1]**2))
     v1R = v1R / (np.sqrt(v1R[0]**2 + v1R[1]**2))
 
-    return directionRight, directionLeft, errorListLeft, errorListRight, allTangSumRight, allTangSumLeft, errorRight, errorLeft, v1L, v1R
+    return directionRight, directionLeft, errorRight, errorLeft, v1L, v1R
 
 
 def extentCodingFunc(leftCortex_extent, rightCortex_extent, newExtentL,
                      newExtentR, N_Extent, angleTarget):
+
+    """ Compute each arm's executed movement extent and extract error
+
+    Parameters:
+        leftCortex_extent: planned right arm movement trajetory extent
+        rightCortex_extent: planned left arm movement trajetory extent
+        newExtentL: ideal right arm movement trajetory extent to target
+        newExtentR: ideal left arm movement trajetory extent to target
+        N_Extent: number of cells in each extent network
+        angleTarget: target direction
+
+    Returns:
+        extentRight: executed extent of left arm movement
+        extentLeft: executed extent of right arm movement
+        errorRight_e: left arm movement error in terms of extent
+        errorLeft_e: right arm movement error in terms of extent
+    """
 
     vxsLeft = []
     vysLeft = []

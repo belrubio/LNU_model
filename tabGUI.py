@@ -183,7 +183,7 @@ class tabGUI(tk.Frame):
 
         run_button.grid(row=9, column=3, sticky="sew")
 
-        # Define labels for the entry fields
+        # Define labels for the out summary values (in top right panel)
         self.labelR1 = tk.Label(
             ctr_right,
             text='Final State                           ',

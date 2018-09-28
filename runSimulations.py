@@ -20,6 +20,32 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
                     in_showTrial1, in_showTrial2, simulateStroke,
                     simulateRehab, simulateFU, FORCED_TRIAL, GAIN, STEER):
 
+    """Generates simulations and saves json files of final model state
+
+    Parameters:
+        in_UDLR (float): Use-dependent learning rate
+        in_EBLR (float): Error-based learning rate
+        in_RBLR (float): Reinforcement-based learning rate
+        in_EL (float): Exploration Level or Noise in the hand \
+        selection decision making
+        in_RD (float): Non-Paretic Arm Bias/Hand Dominance (currently not used)
+        in_trials (int): Number of trials to simulate
+        in_showTrial1 (int): Trial onset to play animation fo simulation
+        in_showTrial2 (int): 2nd Trial onset to play animation fo simulation
+        simulateStroke (bool): True = Trials of treatment
+        simulateRehab (bool): True = Trials of treatment
+        simulateFU (bool): True = Trials of follow-up (without treatment)
+        FORCED_TRIAL (float): normalized value indicating probability of \
+        forcing the use of the paretic limb at each trial
+        GAIN (float): normalized value indicating ratio of extent \
+        amplification of the paretic limb movement.
+        STEER (float): normalized value indicating ratio of directional error \
+        reduction of the paretic limb movement.
+
+    Returns:
+        True when done
+    """
+
     trials = in_trials
     Exploration_Level = in_EL
     ErrorBasedLearning = in_EBLR
@@ -217,8 +243,8 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         pacR = 0
         ac = 0
 
-        directionRight, directionLeft, errorListLeft, errorListRight, allTangSumR, allTangSumL, errorR, errorL, dvL, dvR = fDirectionCoding(
-            leftCortex, rightCortex, newdAngle, N)
+        directionRight, directionLeft, errorR, errorL, dvL, dvR = fDirectionCoding(
+            leftCortex, rightCortex, newdAngle)
 
         extentRight, extentLeft, errorRight_e, errorLeft_e = extentCodingFunc(
             leftCortex_extent, rightCortex_extent, newExtentL, newExtentR,
@@ -419,8 +445,8 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         newExtentR = np.linalg.norm(a)
         b = [(0.2 + math.cos(angle)), (math.sin(angle))]
         newExtentL = np.linalg.norm(b)
-        directionRight, directionLeft, errorListLeft, errorListRight, b, c, errorR, errorL, dvL, dvR = fDirectionCoding(
-            leftCortex, rightCortex, angle, N)
+        directionRight, directionLeft, errorR, errorL, dvL, dvR = fDirectionCoding(
+            leftCortex, rightCortex, angle)
         [
             choosenHand, actualReward, actualReward_nonUsed,
             expectedRewardLeft, expectedRewardRight, p_left, p_right,

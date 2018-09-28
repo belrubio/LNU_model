@@ -67,10 +67,6 @@ class Net:
         activity = self.actitivity
         return activity
 
-    def sensitivityFunc(self):
-        sensitivity = self.sensitivity
-        return sensitivity
-
     def learningRuleFunc(self, direction, dAngle, supervisedRation,
                          unsupervisedRation):
         smallerAngle2 = min(
