@@ -2,7 +2,7 @@
 
 from motorCortexNet import *
 from actionChoiceNet import *
-from SimulationsMain import *
+from runSimulations import *
 
 nChoice = 10
 

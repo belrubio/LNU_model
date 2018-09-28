@@ -1,10 +1,9 @@
-from SimulationsMain import *
+from runSimulations import *
 
 allTangSumLeft = []
 tangSumLeft = [0, 0]
 errorListLeft = []
 sumOfSquareActivitiesListLeft = []
-
 activListRight = []
 allTangSumRight = [0, 0]
 tangSumRight = [0, 0]
@@ -12,7 +11,7 @@ errorListRight = []
 sumOfSquareActivitiesListRight = []
 
 
-def directionCodingFunc(leftCortex, rightCortex, newdAngle, N):
+def fDirectionCoding(leftCortex, rightCortex, newdAngle, N):
 
     vxsLeft = []
     vysLeft = []
@@ -126,7 +125,3 @@ def extentCodingFunc(leftCortex_extent, rightCortex_extent, newExtentL,
     errorLeft_e = newExtentL - extentLeft
 
     return extentRight, extentLeft, errorRight_e, errorLeft_e
-
-
-if __name__ == "__directionCodingFunc__":
-    directionCodingFunc()
