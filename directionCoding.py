@@ -20,7 +20,7 @@ def directionCodingFunc(leftCortex, rightCortex, newdAngle, N):
     acts = []
     mean_activity = 0
 
-    #sum the tangentes of all the angles Left Cortex
+    # sum the tan of all the angles Left Cortex
     for i in range(len(leftCortex)):
         act, k = leftCortex[i].activationRuleFunc(
             newdAngle, mean_activity)  # update activity of each cell
@@ -40,7 +40,7 @@ def directionCodingFunc(leftCortex, rightCortex, newdAngle, N):
     if (directionLeft >= (2 * math.pi)):
         directionLeft -= (2 * math.pi)
 
-    #sum the tangents of all the angles Right Cortex
+    # sum the tangents of all the angles Right Cortex
     vxsRight = []
     vysRight = []
     tangSumRight = [0, 0]
@@ -105,7 +105,7 @@ def extentCodingFunc(leftCortex_extent, rightCortex_extent, newExtentL,
     v1 = tangSumLeft
     extentLeft = tangSumLeft
 
-    #sum the tangentes of all the angles Right Cortex
+    # sum the tangentes of all the angles Right Cortex
     vxsRight = []
     vysRight = []
     tangSumRight = 0
@@ -120,7 +120,7 @@ def extentCodingFunc(leftCortex_extent, rightCortex_extent, newExtentL,
 
     v1R = tangSumRight
     v1 = tangSumRight
-    extentRight = tangSumRight  # for range from 0 to 2pi ->    a = mod(atan2(y,x),2*pi);
+    extentRight = tangSumRight
 
     errorRight_e = newExtentR - extentRight
     errorLeft_e = newExtentL - extentLeft

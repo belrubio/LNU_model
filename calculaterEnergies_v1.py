@@ -58,7 +58,7 @@ def fComputeEnergies(vector, newdAngle, extentRight, extentLeft):
 
 
 def fComputeEnergy(sa, ea, st, et):
-    #Compute derivative of acceleration = jerk
+    # Compute derivative of acceleration = jerk
     se_dot3 = np.vstack((sa, ea))
     shifted_se_dot3 = np.roll(se_dot3, 1, 1)
     deltaTheta = shifted_se_dot3 - se_dot3
@@ -89,7 +89,7 @@ def fComputeTorques(s_angles, e_angles):
     Is = physParams["momentShoulderPos"]
     Ie = physParams["momentElbowPos"]
 
-    #define terms of function
+    # define terms of function
     alpha = ms * rs**2 + Is + me * (
         ls**2 + re**2 + 2 * ls * re * np.cos(e_angles)) + Ie
     beta = me * ls * re * np.cos(e_angles) + me * re + Ie
@@ -100,7 +100,7 @@ def fComputeTorques(s_angles, e_angles):
     S_Torques = np.ones(len(e_angles)) * np.nan
     E_Torques = np.ones(len(e_angles)) * np.nan
 
-    #Compute torques following paper from L.B.BAGESTEIRO AND R.L. SAINBURG J Neurophysiol Vol 88 p.2420
+    # Compute torques following paper from L.B.BAGESTEIRO AND R.L. SAINBURG J Neurophysiol Vol 88 p.2420
     for s in range(len(e_angles)):
         S_Torques[s] = alpha[s] * S_angleAcc[s] + beta[s] * E_angleAcc[
             s] - gama[s] * E_angleVelocity[s] - 2 * gama[s] * S_angleVelocity[
@@ -113,7 +113,7 @@ def fComputeTorques(s_angles, e_angles):
 
 def funcionComputeTrajectories(listaX, listaY, hand, newdAngle):
 
-    #% calculate inverse kinematics
+    # calculate inverse kinematics
     a = 0.48
     b = 0.51
     h = 1
@@ -125,11 +125,10 @@ def funcionComputeTrajectories(listaX, listaY, hand, newdAngle):
         h = -1
         hdist = -0.2
 
-    #calculate angles for each step in the hand trajectory
+    # calculate angles for each step in the hand trajectory
     for step in range(len(listaX)):
         [angleShoulder[step], angleElbow[step]] = ikArm(
             listaX[step] - hdist * aux[step], listaY[step], h)
-        #aqui ploteabamos
 
     if (hand == 0):
         allAngles = np.vstack((angleShoulder, angleElbow))
@@ -149,10 +148,10 @@ def ikArm(x, y, h):
         m = np.sqrt(a * a - k * k)
 
     except ZeroDivisionError:
-        #print "Divide by Zero error. No valid joint solution."
+        print("Divide by Zero error. No valid joint solution.")
         return
     except ValueError:
-        #print "Math function error. Probably square root of negative number. No valid joint solution."
+        print ("Math function error. Probably square root of negative number.  No valid joint solution.")
         return
 
     theta = np.degrees(np.arctan2(float(y), float(x)) - np.arctan2(h * m, k))

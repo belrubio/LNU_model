@@ -10,6 +10,7 @@ import tkinter.messagebox
 import numpy as np
 from numpy.random import random
 from scipy import stats
+import plot as pl
 from SimulationsMain import *
 
 

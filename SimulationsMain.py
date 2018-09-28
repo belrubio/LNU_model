@@ -63,7 +63,8 @@ def SimulationsMain(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
             rightCortex_extent[i].weight = (
                 f['weight_extent_R'][i])  # update activity of each cell
 
-        #Generating stroke: we remove  50% of neurons in left cortex -> decrease performance of right hand ----------------------------
+        # Simulating stroke: we remove  50% of neurons in left cortex
+        # Notice a decrease in performance of the right hand
         listOfDeadNeurons = []
         listOfDeadNeurons2 = []
 
@@ -73,7 +74,7 @@ def SimulationsMain(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
 
         for i in range(len(listOfDeadNeurons)):
             neuron = listOfDeadNeurons[i] - i
-            #GENERATE STROKE
+            # Simulate a stroke
             del leftCortex[neuron]
 
         choiceLeft = [
@@ -135,7 +136,7 @@ def SimulationsMain(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
                 rightCortex_extent[
                     i].weight = 0.3  # update activity of each cell
 
-            #weights should be initialized to...
+            # Weights should be initialized to...
             choiceLeft = [
                 ActionChoiceClass("left", (i * 2 * pi / Nchoice), 0.5, 0)
                 for i in range(Nchoice)
@@ -167,15 +168,15 @@ def SimulationsMain(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
     energy_R = []
     actualReward_logs = []
 
-    ######## action choice nets #########
+    # Initialize action choice nets
     weightListCheckLeft = []
     weightListCheckRight = []
 
-    nInput = 250  # Num of possible angles in range 0 to 360
+    nInput = 250  # Number of possible angles in range 0 to 360
 
     possibleAngles = [(i * float(360.00 / nInput)) for i in range(nInput)]
 
-    #suffle PissibleAnles
+    # Shuffle PissibleAnles
     for x in range(nInput):
         auxShuffle = int(random.uniform(0, nInput))
         auxShuffle_2 = possibleAngles[auxShuffle]
@@ -205,9 +206,10 @@ def SimulationsMain(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         b = [(0.2 + math.cos(newdAngle)), (math.sin(newdAngle))]
         newExtentL = np.linalg.norm(b)
 
-        #NewExtentLeft is the actual extent of the optimal movement for the right hand/left cortex
+        # NewExtentLeft is the actual extent of the optimal movement for
+        # the right hand/left cortex
         if (simulateRehab):
-            #keep applying gain
+            # keep applying gain
             newExtentL = newExtentL - (newExtentL * GAIN)
 
         startTime = int(round(time.time() * 1000))
@@ -241,7 +243,7 @@ def SimulationsMain(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
                                  rightArm, directionRight, directionLeft, 0,
                                  Exploration_Level)
 
-            #Show 5 consecutive trials
+            # Show 5 consecutive trials
             if (e >= in_showTrial1
                     and e < in_showTrial1 + 6) or (e >= in_showTrial2
                                                    and e < in_showTrial2 + 6):
@@ -337,11 +339,9 @@ def SimulationsMain(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         predictionErrorR = actualReward - expectedRewardRight
 
         if (choosenHand == 1):
-
             # cortex left
             for i in range(len(choiceRight)):
-                choiceRight[
-                    i].weight += ReinforcementBasedLearning * predictionErrorR * math.exp(
+                choiceRight[i].weight += ReinforcementBasedLearning * predictionErrorR * math.exp(
                         -((min(
                             newdAngle - choiceRight[i].center,
                             newdAngle - choiceRight[i].center + 2 * math.pi,
@@ -349,19 +349,16 @@ def SimulationsMain(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
                             key=abs))**2 / (math.pi / 10)**2))
 
         if (choosenHand == 0):
-
             # cortex right
             for i in range(len(choiceRight)):
-                choiceLeft[
-                    i].weight += ReinforcementBasedLearning * predictionErrorL * math.exp(
-                        -((
-                            min(newdAngle - choiceLeft[i].center,
+                choiceLeft[i].weight += ReinforcementBasedLearning * predictionErrorL * math.exp(
+                        -((min(
+                                newdAngle - choiceLeft[i].center,
                                 newdAngle - choiceLeft[i].center + 2 * math.pi,
                                 newdAngle - choiceLeft[i].center - 2 * math.pi,
                                 key=abs))**2 / (math.pi / 10)**2))
 
         if (choosenHand == 1):
-
             sensitivityUpdateLeft = []
             sumOfSquareActivitiesLeft = 0
             for i in range(len(leftCortex)):
@@ -486,16 +483,16 @@ def SimulationsMain(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
 
     if (simulateStroke or simulateRehab):
         with open('Trainned_model_stroke.json', 'w') as f:
-            #save training weights to file
+            # save training weights to file
             json.dump(dictWeights, f)
     else:
         if (simulateFU):
             with open('Trainned_model_rehab.json', 'w') as f:
-                #save training weights to file
+                # save training weights to file
                 json.dump(dictWeights, f)
         else:
             with open('Trainned_model.json', 'w') as f:
-                #save training weights to file
+                # save training weights to file
                 json.dump(dictWeights, f)
 
     dictWeights = {
@@ -504,11 +501,11 @@ def SimulationsMain(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         'listOfAngles': listOfAngles
     }
     with open('Trainned_probabilities.json', 'w') as file:
-        #save training weights to file
+        # save training weights to file
         json.dump(dictWeights, file)
 
     dictLogs = {
-        'Choosen': choosen_per_trial,
+        'Chosen': choosen_per_trial,
         'angle_per_trial': angle_per_trial,
         'rt': rt,
         'errorLeft_extent': errorLeft_extent,
@@ -522,7 +519,7 @@ def SimulationsMain(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         'actualReward_logs': actualReward_logs
     }
     with open('Trainned_logs.json', 'w') as file:
-        #save training weights to file
+        # save training weights to file
         json.dump(dictLogs, file)
 
     print("files saved")
