@@ -5,67 +5,85 @@ import numpy as np
 
 
 class Net:
+
+    """
+    A class used to represent a pool of motor cortex neurons.
+
+    ...
+
+    Attributes
+    ----------
+    sensitivity : float
+        angle to which this cell has max sensitivity/response
+    cortex : net
+        the neural net corresponding to each cortex
+    activity : float
+        the activity of this cell, defined by a truncated cosine function
+
+    Methods
+    -------
+    getVector()
+        Returns coordinates corresponding to the angle
+
+    getExtent()
+        Returns extent of the movement
+
+    activationExtentRule_Func()
+        Updates self.activity according to distance to target orientation
+
+    activationRuleFunc()
+        Updates self.activity according to distance to target orientation
+
+    learningRuleFunc()
+        Simulates neural adaptation by updating the self.sensitivity
+
+    learningRuleFunc_extent()
+        Simulates neural adaptation by updating the self.weight
+
+    """
+
     def __init__(self, sensitivity, cortex):
         self.sensitivity = sensitivity
         self.cortex = cortex
         self.activity = 0.0
-        self.meanactivity = 0.0
-        self.activity1 = 0.0
-        self.weight = 0.0
+        self.weight = 0.5
+        self.vector = 0
 
-    def tangArcFunc(self):
+    def getVector(self):
         sensitivity = self.sensitivity
-
-        self.vx = math.cos(sensitivity)
-        self.vy = math.sin(sensitivity)
-        self.vx = self.activity * self.vx
-        self.vy = self.activity * self.vy
-        tangArc = (self.activity * self.vx, self.activity * self.vy)
-        return tangArc, self.vx, self.vy
+        self.vx = self.activity * math.cos(sensitivity)
+        self.vy = self.activity * math.sin(sensitivity)
+        self.vector = (self.activity * math.cos(sensitivity), self.activity * math.sin(sensitivity))
+        return self.vector, self.vx, self.vy
 
     def getExtent(self):
-        sensitivity = self.sensitivity
-
-        self.vx = math.cos(sensitivity)
-        self.vy = math.sin(sensitivity)
-        self.vx = self.activity * self.vx
-        self.vy = self.activity * self.vy
-        tangArc = (self.activity * self.vx, self.activity * self.vy)
-        act = np.linalg.norm(tangArc)
-        return act
+        return np.linalg.norm(self.vector)
 
     def activationExtentRule_Func(self, targetextent):
-        activityE = self.weight * (math.cos(
+        self.activity = self.weight * (math.cos(
             min(targetextent - self.sensitivity,
                 targetextent - self.sensitivity + 2 * math.pi,
                 targetextent - self.sensitivity - 2 * math.pi,
                 key=abs)))
-        if (activityE > 0.0):
-            self.activity = activityE
+        if (self.activity > 0.0):
+            self.activity = self.activity
         else:
             self.activity = 0.0
-        return self.activity
 
-    def activationRuleFunc(self, dAngle, meanactivity):
-        activity1 = math.cos(
+    def activationRuleFunc(self, dAngle):
+        act = math.cos(
             min(dAngle - self.sensitivity,
                 dAngle - self.sensitivity + 2 * math.pi,
                 dAngle - self.sensitivity - 2 * math.pi,
                 key=abs))
 
-        k = random.normalvariate(0, (0.15 * activity1))  # Add noise
-        activity = activity1 + k
+        k = random.normalvariate(0, (0.15 * act))  # Add noise
+        act = act + k
 
-        if (activity < 0):
-            activity = 0
+        if (act < 0):
+            act = 0
 
-        self.activity = activity
-
-        return activity, k
-
-    def activityFunc(self):
-        activity = self.actitivity
-        return activity
+        self.activity = act
 
     def learningRuleFunc(self, direction, dAngle, supervisedRation,
                          unsupervisedRation):
@@ -94,5 +112,5 @@ class Net:
         return self.sensitivity
 
     def learningRuleFunc_extent(self, error):
-        weightLearning = 0.4
-        self.weight += (weightLearning * error * self.activity)
+            weightLearning = 0.4
+            self.weight += (weightLearning * error * self.activity)

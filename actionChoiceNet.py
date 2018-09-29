@@ -1,4 +1,3 @@
-
 import math
 import random
 import numpy as np
@@ -10,4 +9,3 @@ class ActionChoiceClass:
         self.center = center
         self.weight = weight
         self.activity = activity
-        # print ("center from neuron " , math.degrees(center), " in ", cortex)

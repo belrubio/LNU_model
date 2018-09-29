@@ -5,6 +5,15 @@ import ttk
 import numpy as np
 from tabGUI import *
 
+# Owned
+__author__ = “Belen Rubio Ballester”
+__copyright__ = “Copyright 2018, Model of learned non-use and recovery”
+__license__ = “MPL 2.0”
+__version__ = “0.1.0”
+__maintainer__ = “Belen Rubio Ballester”
+__email__ = “belen.rubio.ballester@gmail.com”
+__status__ = “Dev”
+
 
 # Root class to create the interface and define the controller function to
 # switch frames

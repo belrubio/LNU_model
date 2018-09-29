@@ -62,6 +62,7 @@ class tabGUI(tk.Frame):
         ctr_right.grid(row=0, column=3, sticky="nsew")
         ctr_right.configure(width=500)
 
+        # Top dashboard ---------------------
         # create the center frame widgets
         self.center.grid_rowconfigure(0, weight=1)
         self.center.grid_columnconfigure(1, weight=1)
@@ -119,7 +120,6 @@ class tabGUI(tk.Frame):
                     background="LightBlue3",
                     width=6))
 
-
         run_button = tk.Button(
             ctr_mid,
             text="RUN SIMULATION",
@@ -133,36 +133,6 @@ class tabGUI(tk.Frame):
         saveas_button = tk.Button(
             ctr_left, text="SAVE AS", bg="red", command=self.file_save)
         saveas_button.grid(row=10, column=3)
-        self.progressbar = ttk.Progressbar(
-            btm_frame,
-            style='text.Horizontal.TProgressbar',
-            orient='horizontal',
-            length=600,
-            mode='determinate')
-        self.progressbar.pack(fill=tk.BOTH, side=tk.TOP)
-        self.progressbar["value"] = 0
-
-        about = "Ballester, B. R., Maier, M., Mozo, R. M. S. S., Castaneda, V., Duff, A., and Verschure, P. F. (2016). Counteracting learned non-use in chronic stroke patients with reinforcement-induced movement therapy. Journal of neuroengineering and rehabilitation, 13(1), 74.\n SPECS Lab, IBEC. Contact: brubio@ibecbarcelona.eu\n"
-        T = tk.Label(
-            btm_frame, text=about, font=("Helvetica", 12), bg='gray97')
-        T.pack()
-
-        # Display a progress bar on the bottom frame
-        self.style = ttk.Style(self)
-        # add label in the layout fo the progress bar
-        self.style.layout('text.Horizontal.TProgressbar',
-                          [('Horizontal.Progressbar.trough', {
-                              'children': [('Horizontal.Progressbar.pbar', {
-                                  'side': 'left',
-                                  'sticky': 'ns'
-                              })],
-                              'sticky':
-                              'nswe'
-                          }), ('Horizontal.Progressbar.label', {
-                              'sticky': ''
-                          })])
-        # set initial text
-        self.style.configure('text.Horizontal.TProgressbar', text='0')
 
         # layout the widgets in the top frame
         model_label.grid(row=0, column=3)
@@ -242,6 +212,39 @@ class tabGUI(tk.Frame):
         self.labelR7.grid(row=7, column=1, sticky=tk.W)
         self.labelR8.grid(row=8, column=1, sticky=tk.W)
 
+        # Bottom dashboard ---------------------
+        self.progressbar = ttk.Progressbar(
+            btm_frame,
+            style='text.Horizontal.TProgressbar',
+            orient='horizontal',
+            length=600,
+            mode='determinate')
+        self.progressbar.pack(fill=tk.BOTH, side=tk.TOP)
+        self.progressbar["value"] = 0
+
+        about = "Ballester, B. R., Maier, M., Mozo, R. M. S. S., Castaneda, V., Duff, A., and Verschure, P. F. (2016). Counteracting learned non-use in chronic stroke patients with reinforcement-induced movement therapy. Journal of neuroengineering and rehabilitation, 13(1), 74.\n SPECS Lab, IBEC. Contact: brubio@ibecbarcelona.eu\n"
+        T = tk.Label(
+            btm_frame, text=about, font=("Helvetica", 12), bg='gray97')
+        T.pack()
+
+        # Display a progress bar on the bottom frame
+        self.style = ttk.Style(self)
+        # add label in the layout fo the progress bar
+        self.style.layout('text.Horizontal.TProgressbar',
+                          [('Horizontal.Progressbar.trough', {
+                              'children': [('Horizontal.Progressbar.pbar', {
+                                  'side': 'left',
+                                  'sticky': 'ns'
+                              })],
+                              'sticky':
+                              'nswe'
+                          }), ('Horizontal.Progressbar.label', {
+                              'sticky': ''
+                          })])
+        # set initial text
+        self.style.configure('text.Horizontal.TProgressbar', text='0')
+
+    # Middle dashboard ---------------------
     # Plot de results from simulations
     def drawTrialData(self, trialNum, rt, angle_per_trial, listOfAngles,
                       probability_right, probability_left, error_right,
@@ -418,7 +421,7 @@ class tabGUI(tk.Frame):
         self.canvas5.get_tk_widget().pack(
             side='left', fill='both', expand=True)
 
-    # Run the full set of simulations
+    # Run the full set of simulations. Here is where everything happens:
     def startSimulation(self):
         self.paramsRehab = [0, 0, 0]
         if self.simulateRehab:
@@ -426,17 +429,17 @@ class tabGUI(tk.Frame):
             self.paramsRehab[1] = float(self.entries[9].get())
             self.paramsRehab[2] = float(self.entries[10].get())
 
-        done = runSimulations(self, float(self.entries[0].get()),
-                               float(self.entries[1].get()),
-                               float(self.entries[2].get()),
-                               float(self.entries[3].get()),
-                               float(self.entries[4].get()),
-                               int(self.entries[5].get()),
-                               int(self.entries[6].get()),
-                               int(self.entries[7].get()), self.simulateStroke,
-                               self.simulateRehab, self.simulateFU,
-                               self.paramsRehab[0], self.paramsRehab[1],
-                               self.paramsRehab[2])
+        runSimulations(self, float(self.entries[0].get()),
+                       float(self.entries[1].get()),
+                       float(self.entries[2].get()),
+                       float(self.entries[3].get()),
+                       float(self.entries[4].get()),
+                       int(self.entries[5].get()),
+                       int(self.entries[6].get()),
+                       int(self.entries[7].get()), self.simulateStroke,
+                       self.simulateRehab, self.simulateFU,
+                       self.paramsRehab[0], self.paramsRehab[1],
+                       self.paramsRehab[2])
 
     # Save the current free paramenters indicated in entry fields
     def save(self):

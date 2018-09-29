@@ -8,46 +8,29 @@ global targetPos, energLevelRight, energLevelLeft, leftArmAngle, leftForeArmAngl
 
 foreArmLenght = 220 / 2
 armLenght = 250 / 2
-
 targetPos = [200, 400]
-
 energLevelLeft = 490
 energLevelRight = 490
 energy = [0, 0]
 size = [800, 600]
 
 
-def accumulatorsFunc(x, y, xmin, xmax, ymin, ymax, screen, font, rgb, initY):
-    w, h = screen.get_size()
-    # Plot data
-    pygame.draw.line(screen, (100, 100, 100), (0 + 610, 0.5 * -100 + 370),
-                     (15 * 7 + 610, 0.5 * -100 + 370), 3)
-    y = y * (-100)
-
-    for i in range(len(x) - 1):
-        pygame.draw.line(
-            screen, rgb, (int(x[i]) * 4 + 610, int(y[i]) + 370 - initY),
-            (int(x[i + 1]) * 4 + 610, int(y[i + 1]) + 370 - initY), 2)
-
-    textAccumulator = font.render("Accumulator", True, (0, 0, 0))
-    screen.blit(textAccumulator, [630, 230])
-    pygame.draw.rect(screen, (0, 0, 0), [590, 210, 190, 190], 2)  # workspace
-
-
-def gui(armAngleG=0,
+# Play animation of each trial simulation of the decision making and execution
+def gui(
+        armAngleG=0,
         foreArmAngleG=0,
-        targetXG=0,
-        targetYG=0,
+        targetXG=0,  # X location of target
+        targetYG=0,  # Y location of target
         selectedHand=-1,
-        acR=0,
-        acL=0,
-        acRprev=0,
-        acLprev=0,
+        acR=0,  # accumulator list of values Right
+        acL=0,  # accumulator list of values Left
+        acRprev=0,  # previous accumulator value Right
+        acLprev=0,  # previous accumulator value Left
         ac=0,
-        expR_R=0,
-        expR_L=0,
-        startTime=0,
-        currentT=0):
+        expR_R=0,  # Expected Value for Right Hand
+        expR_L=0,  # Expected Value for Left Hand
+        startTime=0,  # Trial time onset
+        currentT=0):  # Current Time stamp
 
     rt = currentT - startTime
     pygame.init()
@@ -62,7 +45,7 @@ def gui(armAngleG=0,
     leftShoulderPos = [260, 300]
     leftArmAngle = -160
     leftForeArmAngle = 132.4 + leftArmAngle
-    energy = calculaterEnergies_v1.getEnergy()
+    Energy = calculateEnergies.getEnergy()
 
     if selectedHand == 1:
         rightArmAngle = armAngleG
@@ -81,7 +64,7 @@ def gui(armAngleG=0,
             acL = np.hstack((acLprev, acL))
 
     targetPos = [290 + targetXG * 250,
-                 290 - targetYG * 250]  # [ targetXG*100+350,targetYG*100+100]
+                 290 - targetYG * 250]
     screen.fill(pygame.Color(245, 250, 255))
     textEnerg = font.render("Energies", True, (0, 0, 0))
     textReward = font.render("Exp. Reward", True, (0, 0, 0))
@@ -120,7 +103,6 @@ def gui(armAngleG=0,
                      [targetPos[0], targetPos[1], 20, 20])  # target
     pygame.draw.rect(screen, (0, 0, 0), [targetPos[0], targetPos[1], 20, 20],
                      2)  # target
-
     pygame.draw.line(screen, (75, 75, 75), rightShoulderPos, rightElbow,
                      10)  # rightArm
     pygame.draw.line(screen, (75, 75, 75), rightElbow, rightHand,
@@ -172,10 +154,8 @@ def gui(armAngleG=0,
     screen.blit(textPlus, [705, 190])
 
     # accumulators
-    accumulatorsFunc(
-        range(len(ac)), acR, 50, 50, 50, 50, screen, font, [200, 10, 10], 0)
-    accumulatorsFunc(
-        range(len(ac)), -acL, 50, 50, 50, 50, screen, font, [10, 10, 200], 100)
+    accumulatorsFunc(range(len(ac)), acR, screen, font, [200, 10, 10], 0)
+    accumulatorsFunc(range(len(ac)), -acL, screen, font, [10, 10, 200], 100)
 
     screen.blit(textEnerg, [650, 535])
     screen.blit(textEnergLeft, [640, 510])
@@ -190,6 +170,24 @@ def gui(armAngleG=0,
     time.sleep(0.01)
 
     return ac, acR, acL
+
+
+def accumulatorsFunc(x, y, screen, font, rgb, initY):
+
+    # Display interactive race model activity for decision making (right panel)
+    w, h = screen.get_size()
+    pygame.draw.line(screen, (100, 100, 100), (0 + 610, 0.5 * -100 + 370),
+                     (15 * 7 + 610, 0.5 * -100 + 370), 3)
+    y = y * (-100)
+
+    for i in range(len(x) - 1):
+        pygame.draw.line(
+            screen, rgb, (int(x[i]) * 4 + 610, int(y[i]) + 370 - initY),
+            (int(x[i + 1]) * 4 + 610, int(y[i + 1]) + 370 - initY), 2)
+
+    textAccumulator = font.render("Accumulator", True, (0, 0, 0))
+    screen.blit(textAccumulator, [630, 230])
+    pygame.draw.rect(screen, (0, 0, 0), [590, 210, 190, 190], 2)  # workspace
 
 
 def close_gui():

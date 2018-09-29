@@ -12,15 +12,15 @@ import calculateEnergies
 import main
 
 energies = [0, 0]
-expectedRewardLeft = 0
-expectedRewardRight = 0
+expRewardL = 0
+expRewardR = 0
 
 
 def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
-                    in_showTrial1, in_showTrial2, simulateStroke,
-                    simulateRehab, simulateFU, FORCED_TRIAL, GAIN, STEER):
-
-    """Generates simulations and saves json files of final model state
+                   in_showTrial1, in_showTrial2, simulateStroke, simulateRehab,
+                   simulateFU, FORCED_TRIAL, GAIN, STEER):
+    """Generates simulations,
+    when done it plots and saves json files of the final model state.
 
     Parameters:
         in_UDLR (float): Use-dependent learning rate
@@ -42,8 +42,6 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         STEER (float): normalized value indicating ratio of directional error \
         reduction of the paretic limb movement.
 
-    Returns:
-        True when done
     """
 
     trials = in_trials
@@ -58,7 +56,6 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
     N = 500
     N_extent = 20
     Nchoice = 10
-    pi = math.pi
     leftCortex_extent = [
         Net(math.radians(i * float(360.00 / N_extent)), "left")
         for i in range(N_extent)
@@ -68,112 +65,20 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         for i in range(N_extent)
     ]
 
-    if (simulateStroke):
-        f = json.loads(open('Trainned_model.json').read())
-        leftCortex = [
-            Net(math.radians(f['sensitivityUpdateLeft'][i]), "left")
-            for i in range(len(f['sensitivityUpdateLeft']))
-        ]
-        rightCortex = [
-            Net(math.radians(f['sensitivityUpdateRight'][i]), "right")
-            for i in range(len(f['sensitivityUpdateRight']))
-        ]
+    # Update model state
+    leftCortex, rightCortex, choiceLeft, choiceRight = updateModelParams(
+        Nchoice, simulateStroke, simulateRehab, simulateFU, N, N_extent,
+        leftCortex_extent, rightCortex_extent)
 
-        for i in range(N_extent):
-            leftCortex_extent[i].weight = (
-                f['weight_extent_L'][i])  # update activity of each cell
-            rightCortex_extent[i].weight = (
-                f['weight_extent_R'][i])  # update activity of each cell
+    spatialRangeLeft = (90, 270)  # define angles workspace of left arm
+    spatialRangeRight = (270, 90)  # define angles workspace of right arm
 
-        # Simulating stroke: we remove  50% of neurons in left cortex
-        # Notice a decrease in performance of the right hand
-        listOfDeadNeurons = []
-        listOfDeadNeurons2 = []
-
-        for i in range(len(leftCortex)):
-            if ((leftCortex[i].sensitivity < math.radians(90))):
-                listOfDeadNeurons.append(i)
-
-        for i in range(len(listOfDeadNeurons)):
-            neuron = listOfDeadNeurons[i] - i
-            # Simulate a stroke
-            del leftCortex[neuron]
-
-        choiceLeft = [
-            ActionChoiceClass("left", (i * 2 * pi / Nchoice),
-                              f['weightListCheckLeft'][i], 0)
-            for i in range(Nchoice)
-        ]
-        choiceRight = [
-            ActionChoiceClass("right", (i * 2 * pi / Nchoice),
-                              f['weightListCheckRight'][i], 0)
-            for i in range(Nchoice)
-        ]
-
-    else:
-
-        if (simulateRehab or simulateFU):
-
-            f = json.loads(open('Trainned_model_stroke.json').read())
-            leftCortex = [
-                Net(math.radians(f['sensitivityUpdateLeft'][i]), "left")
-                for i in range(len(f['sensitivityUpdateLeft']))
-            ]
-            rightCortex = [
-                Net(math.radians(f['sensitivityUpdateRight'][i]), "right")
-                for i in range(len(f['sensitivityUpdateRight']))
-            ]
-
-            for i in range(N_extent):
-                leftCortex_extent[i].weight = (
-                    f['weight_extent_L'][i])  # update activity of each cell
-                rightCortex_extent[i].weight = (
-                    f['weight_extent_R'][i])  # update activity of each cell
-
-            choiceLeft = [
-                ActionChoiceClass("left", (i * 2 * pi / Nchoice),
-                                  f['weightListCheckLeft'][i], 0)
-                for i in range(Nchoice)
-            ]
-            choiceRight = [
-                ActionChoiceClass("right", (i * 2 * pi / Nchoice),
-                                  f['weightListCheckRight'][i], 0)
-                for i in range(Nchoice)
-            ]
-
-        else:
-
-            leftCortex = [
-                Net(math.radians(i * float(360.00 / N)), "left")
-                for i in range(N)
-            ]
-            rightCortex = [
-                Net(math.radians(i * float(360.00 / N)), "right")
-                for i in range(N)
-            ]
-
-            for i in range(N_extent):
-                leftCortex_extent[
-                    i].weight = 0.3  # update activity of each cell
-                rightCortex_extent[
-                    i].weight = 0.3  # update activity of each cell
-
-            # Weights should be initialized to...
-            choiceLeft = [
-                ActionChoiceClass("left", (i * 2 * pi / Nchoice), 0.5, 0)
-                for i in range(Nchoice)
-            ]
-            choiceRight = [
-                ActionChoiceClass("right", (i * 2 * pi / Nchoice), 0.5, 0)
-                for i in range(Nchoice)
-            ]
-
-    spatialRangeLeft = (90, 270)
-    spatialRangeRight = (270, 90)
-
+    # Init action choice nets for storing and updating
+    # action-related expected reward values
     rightArm = ArmRewardClass("right", 0, spatialRangeRight)
     leftArm = ArmRewardClass("left", 0, spatialRangeLeft)
 
+    # Init all vars that will be stored in JSONs after simulations
     probability_right = []
     probability_left = []
     listOfAngles = []
@@ -190,12 +95,11 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
     energy_R = []
     actualReward_logs = []
 
-    # Initialize action choice nets
+    # Init action choice nets
     weightListCheckLeft = []
     weightListCheckRight = []
 
     nInput = 250  # Number of possible angles in range 0 to 360
-
     possibleAngles = [(i * float(360.00 / nInput)) for i in range(nInput)]
 
     # Shuffle PissibleAnles
@@ -242,32 +146,28 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         pacL = 0
         pacR = 0
         ac = 0
+        choosenH = []
 
-        directionRight, directionLeft, errorR, errorL, dvL, dvR = fDirectionCoding(
-            leftCortex, rightCortex, newdAngle)
+        directionRight, directionLeft, errorR, errorL, dvL, dvR = \
+            fDirectionCoding(leftCortex, rightCortex, newdAngle)
 
         extentRight, extentLeft, errorRight_e, errorLeft_e = extentCodingFunc(
             leftCortex_extent, rightCortex_extent, newExtentL, newExtentR,
-            N_extent, newdAngle)
+            newdAngle)
 
         while (choosenHand == -1):
             currT = int(round(time.time() * 1000))
 
             [energies, angleShoulder,
              angleElbow] = calculateEnergies.fComputeEnergies(
-                 np.vstack((dvR, dvL)) / 3., newdAngle, extentRight,
-                 extentLeft)
+                 np.vstack((dvR, dvL)) / 3., newdAngle)
 
-            # Old method to select arm reported in Han et al. 2008
+            # Old method foe hand selection reported in Han et al. 2008
             # We do not use it for hand selection anymore but only to
             # obtain expected reward scores:
-            [
-                choosenH, actualReward, actualReward_nonUsed,
-                expectedRewardLeft, expectedRewardRight, p_left, p_right,
-                directionLeft_Amp
-            ] = returnHandChoice(newdAngle, choiceLeft, choiceRight, leftArm,
-                                 rightArm, directionRight, directionLeft, 0,
-                                 Exploration_Level)
+            [expRewardL, expRewardR, p_left, p_right] = returnHandChoice(
+                newdAngle, choiceLeft, choiceRight, leftArm, rightArm,
+                directionRight, directionLeft, 0, Exploration_Level)
 
             # Show 5 consecutive trials
             if (e >= in_showTrial1
@@ -280,13 +180,12 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
                     3.,
                     np.sin(newdAngle) /
                     (np.sqrt(np.cos(newdAngle)**2 + np.sin(newdAngle)**2)) / 3.
-                    + 0.4, choosenHand, acR, acL, pacR, pacL, ac,
-                    expectedRewardRight, expectedRewardLeft, startTime, currT,
-                    e, False)
+                    + 0.4, choosenHand, acR, acL, pacR, pacL, ac, expRewardR,
+                    expRewardL, startTime, currT, e, False)
 
             # New method to select arm based on interactive race model
             [choosenHand, acL, acR] = CompetingAccumulators(
-                acL, acR, energies, expectedRewardLeft, expectedRewardRight)
+                acL, acR, energies, expRewardL, expRewardR)
 
         rt.append(currT - startTime)
         choosen_per_trial.append(choosenHand)
@@ -303,8 +202,8 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
                 newdAngle - directionRight + 2 * math.pi,
                 newdAngle - directionRight - 2 * math.pi,
                 key=abs))
-        expected_L.append(expectedRewardLeft)
-        expected_R.append(expectedRewardRight)
+        expected_L.append(expRewardL)
+        expected_R.append(expRewardR)
         energy_L.append(energies[1])
         energy_R.append(energies[0])
 
@@ -338,9 +237,8 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
                     3.,
                     np.sin(newdAngle) /
                     (np.sqrt(np.cos(newdAngle)**2 + np.sin(newdAngle)**2)) / 3.
-                    + 0.4, choosenHand, acR, acL, pacR, pacL, ac,
-                    expectedRewardRight, expectedRewardLeft, startTime, currT,
-                    e, True)
+                    + 0.4, choosenHand, acR, acL, pacR, pacL, ac, expRewardR,
+                    expRewardL, startTime, currT, e, True)
 
         if (e == trials - 1):
             for p in range(len(choiceLeft)):
@@ -362,13 +260,15 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
 
         actualReward_logs.append(actualReward)
 
-        predictionErrorL = actualReward - expectedRewardLeft
-        predictionErrorR = actualReward - expectedRewardRight
+        predictionErrorL = actualReward - expRewardL
+        predictionErrorR = actualReward - expRewardR
 
+        # Apply learning rule to improve direction coding
         if (choosenHand == 1):
             # cortex left
             for i in range(len(choiceRight)):
-                choiceRight[i].weight += ReinforcementBasedLearning * predictionErrorR * math.exp(
+                choiceRight[i].weight += ReinforcementBasedLearning * \
+                    predictionErrorR * math.exp(
                         -((min(
                             newdAngle - choiceRight[i].center,
                             newdAngle - choiceRight[i].center + 2 * math.pi,
@@ -378,49 +278,42 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         if (choosenHand == 0):
             # cortex right
             for i in range(len(choiceRight)):
-                choiceLeft[i].weight += ReinforcementBasedLearning * predictionErrorL * math.exp(
+                choiceLeft[i].weight += ReinforcementBasedLearning * \
+                    predictionErrorL * math.exp(
                         -((min(
                                 newdAngle - choiceLeft[i].center,
                                 newdAngle - choiceLeft[i].center + 2 * math.pi,
                                 newdAngle - choiceLeft[i].center - 2 * math.pi,
                                 key=abs))**2 / (math.pi / 10)**2))
 
+        # Store trial state and apply learning rule to improve extent conding
         if (choosenHand == 1):
             sensitivityUpdateLeft = []
             sumOfSquareActivitiesLeft = 0
             for i in range(len(leftCortex)):
                 sumOfSquareActivitiesLeft += leftCortex[i].activity
-                sensitivityUpdateLeft.append(
-                    math.degrees(leftCortex[i].learningRuleFunc(
-                        directionLeft, newdAngle, ErrorBasedLearning,
-                        UseDependentLearning)))
+
             for i in range(len(leftCortex_extent)):
                 leftCortex_extent[i].learningRuleFunc_extent(errorLeft_e)
 
-            sumOfSquareActivitiesListLeft.append(sumOfSquareActivitiesLeft)
-
         if (choosenHand == 0):
-
             sensitivityUpdateRight = []
             sumOfSquareActivitiesRight = 0
 
             for i in range(len(rightCortex)):
                 sumOfSquareActivitiesRight += rightCortex[i].activity
-                sensitivityUpdateRight.append(
-                    math.degrees(rightCortex[i].learningRuleFunc(
-                        directionRight, newdAngle, ErrorBasedLearning,
-                        UseDependentLearning)))
+
             for i in range(len(rightCortex_extent)):
                 rightCortex_extent[i].learningRuleFunc_extent(errorRight_e)
 
-            sumOfSquareActivitiesListRight.append(sumOfSquareActivitiesRight)
-
+    # Update progress bar
     UI.style.configure(
         'text.Horizontal.TProgressbar',
-        text='{:g}'.format(trials))  # update label
+        text='{:g}'.format(trials))  # update label trial
     UI.progressbar["value"] = trials
     UI.progressbar.update()
 
+    # Collect data of model current state
     p_right = 0
     p_left = 0
     probability_right = []
@@ -436,7 +329,6 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
     expectedRewardL = []
     energy_L = []
     energy_R = []
-
     possibleAngles = np.arange(0, 360, 360 / 500.)
 
     for i in range(len(possibleAngles)):
@@ -445,34 +337,29 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         newExtentR = np.linalg.norm(a)
         b = [(0.2 + math.cos(angle)), (math.sin(angle))]
         newExtentL = np.linalg.norm(b)
-        directionRight, directionLeft, errorR, errorL, dvL, dvR = fDirectionCoding(
-            leftCortex, rightCortex, angle)
-        [
-            choosenHand, actualReward, actualReward_nonUsed,
-            expectedRewardLeft, expectedRewardRight, p_left, p_right,
-            directionLeft_Amp
-        ] = returnHandChoice(angle, choiceLeft, choiceRight, leftArm, rightArm,
-                             directionRight, directionLeft, 0,
-                             Exploration_Level)
+        [directionRight, directionLeft, errorR, errorL, dvL, dvR] = \
+            fDirectionCoding(leftCortex, rightCortex, angle)
+        [expRewardL, expRewardR, p_left, p_right] = returnHandChoice(
+            angle, choiceLeft, choiceRight, leftArm, rightArm, directionRight,
+            directionLeft, 0, Exploration_Level)
         probability_right.append(p_right)
         probability_left.append(p_left)
         error_right.append(errorR)
         error_left.append(errorL)
-        expectedRewardL.append(expectedRewardLeft)
-        expectedRewardR.append(expectedRewardRight)
+        expectedRewardL.append(expRewardL)
+        expectedRewardR.append(expRewardR)
         extentRight, extentLeft, errorRight_e, errorLeft_e = extentCodingFunc(
             leftCortex_extent, rightCortex_extent, newExtentL, newExtentR,
-            N_extent, newdAngle)
+            newdAngle)
         error_extent_right.append(errorRight_e)
         error_extent_left.append(errorLeft_e)
         if (p_right > p_left):
             error.append(errorR)
         else:
             error.append(errorL)
-
         [energies, angleShoulder,
          angleElbow] = calculateEnergies.fComputeEnergies(
-             np.vstack((dvR, dvL)) / 3., angle, extentRight, extentLeft)
+             np.vstack((dvR, dvL)) / 3., angle)
         energy_L.append(energies[1])
         energy_R.append(energies[0])
 
@@ -482,19 +369,19 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         sensitivityRight.append(math.degrees(rightCortex[j].sensitivity))
     for j in range(len(leftCortex)):
         sensitivityLeft.append(math.degrees(leftCortex[j].sensitivity))
-
     for j in range(N_extent):
         weight_extent_Left.append(leftCortex_extent[j].weight)
         weight_extent_Right.append(rightCortex_extent[j].weight)
 
+    # Show plots of current model state
     UI.drawTrialData(e, rt, angle_per_trial, possibleAngles, probability_right,
                      probability_left, error_right, error_left, errorRight_e,
                      errorLeft_e, expectedRewardR, expectedRewardL, energy_R,
                      energy_L, sensitivityRight, sensitivityLeft)
 
+    # Save JSON files with current model state for future recovery or analysis
     meanProbLeft = []
     meanProbRight = []
-
     dictWeights = {
         'weightListCheckLeft': weightListCheckLeft,
         'weightListCheckRight': weightListCheckRight,
@@ -549,6 +436,111 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         # save training weights to file
         json.dump(dictLogs, file)
 
-    print("files saved")
+    print("JSON files saved")
 
-    return True
+
+def updateModelParams(Nchoice, simulateStroke, simulateRehab, simulateFU, N,
+                      N_extent, leftCortex_extent, rightCortex_extent):
+
+    # Load JSON Files to recover current state of the model according to phase
+    if (simulateStroke):
+        f = json.loads(open('Trainned_model.json').read())
+        leftCortex = [
+            Net(math.radians(f['sensitivityUpdateLeft'][i]), "left")
+            for i in range(len(f['sensitivityUpdateLeft']))
+        ]
+        rightCortex = [
+            Net(math.radians(f['sensitivityUpdateRight'][i]), "right")
+            for i in range(len(f['sensitivityUpdateRight']))
+        ]
+
+        for i in range(N_extent):
+            leftCortex_extent[i].weight = (
+                f['weight_extent_L'][i])  # update activity of each cell
+            rightCortex_extent[i].weight = (
+                f['weight_extent_R'][i])  # update activity of each cell
+
+        # Simulating stroke: we remove  50% of neurons in left cortex
+        # Notice a decrease in performance of the right hand
+        listOfDeadNeurons = []
+        listOfDeadNeurons2 = []
+
+        for i in range(len(leftCortex)):
+            if ((leftCortex[i].sensitivity < math.radians(90))):
+                listOfDeadNeurons.append(i)
+
+        for i in range(len(listOfDeadNeurons)):
+            neuron = listOfDeadNeurons[i] - i
+            # Simulate a stroke
+            del leftCortex[neuron]
+
+        choiceLeft = [
+            ActionChoiceClass("left", (i * 2 * math.pi / Nchoice),
+                              f['weightListCheckLeft'][i], 0)
+            for i in range(Nchoice)
+        ]
+        choiceRight = [
+            ActionChoiceClass("right", (i * 2 * math.pi / Nchoice),
+                              f['weightListCheckRight'][i], 0)
+            for i in range(Nchoice)
+        ]
+
+    else:
+
+        if (simulateRehab or simulateFU):
+
+            f = json.loads(open('Trainned_model_stroke.json').read())
+            leftCortex = [
+                Net(math.radians(f['sensitivityUpdateLeft'][i]), "left")
+                for i in range(len(f['sensitivityUpdateLeft']))
+            ]
+            rightCortex = [
+                Net(math.radians(f['sensitivityUpdateRight'][i]), "right")
+                for i in range(len(f['sensitivityUpdateRight']))
+            ]
+
+            for i in range(N_extent):
+                leftCortex_extent[i].weight = (
+                    f['weight_extent_L'][i])  # update activity of each cell
+                rightCortex_extent[i].weight = (
+                    f['weight_extent_R'][i])  # update activity of each cell
+
+            choiceLeft = [
+                ActionChoiceClass("left", (i * 2 * math.pi / Nchoice),
+                                  f['weightListCheckLeft'][i], 0)
+                for i in range(Nchoice)
+            ]
+            choiceRight = [
+                ActionChoiceClass("right", (i * 2 * math.pi / Nchoice),
+                                  f['weightListCheckRight'][i], 0)
+                for i in range(Nchoice)
+            ]
+
+        else:
+
+            leftCortex = [
+                Net(math.radians(i * float(360.00 / N)), "left")
+                for i in range(N)
+            ]
+            rightCortex = [
+                Net(math.radians(i * float(360.00 / N)), "right")
+                for i in range(N)
+            ]
+
+            for i in range(N_extent):
+                leftCortex_extent[
+                    i].weight = 0.3  # update activity of each cell
+                rightCortex_extent[
+                    i].weight = 0.3  # update activity of each cell
+
+            # Weights should be initialized to...
+            choiceLeft = [
+                ActionChoiceClass("left", (i * 2 * math.pi / Nchoice), 0.5, 0)
+                for i in range(Nchoice)
+            ]
+            choiceRight = [
+                ActionChoiceClass("right", (i * 2 * math.pi / Nchoice), 0.5, 0)
+                for i in range(Nchoice)
+            ]
+
+    return leftCortex, rightCortex, choiceLeft, choiceRight
