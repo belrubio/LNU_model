@@ -1,10 +1,9 @@
  ----------------------------------------------------------------------------
- 2018, Belen Rubio Ballester. 
+ 2018, Belen Rubio Ballester. belen.rubio.ballester@gmail.com. 
  
- belen.rubio.ballester@gmail.com. 
  SPECS Lab. Institute of Bioengineering of Catalunya. 
- Distributed under the terms of the GNU General Public License (GPL-3.0).
- The full license is in the file COPYING.txt, distributed with this software.
+ 
+ Distributed under the terms of the GNU General Public License (GPL-3.0). The full license is in the file COPYING.txt, distributed with this software.
  ----------------------------------------------------------------------------
  ## Learned Non-Use Recovery Model
 
