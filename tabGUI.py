@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # ----------------------------------------------------------------------------
 # 2018, Belen Rubio Ballester
+# belen.rubio.ballester@gmail.com
 #
 # Distributed under the terms of the GNU General Public License (GPL-3.0).
-#
 # The full license is in the file COPYING.txt, distributed with this software.
 # ----------------------------------------------------------------------------
 #
