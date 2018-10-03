@@ -60,11 +60,9 @@ In the Recovery tab, 3 additional free parameters can be set:
 
 After introducing all the free parameters, press the button "Run Simulation" and wait until the final state of the model is computed. A window will pop-up to display a set of trials if configured at "Show trials at":
 
-![](/images/projects/model/trialSimulation.png)
+![](https://belenrubioballester.com/images/projects/model/trialSimulation.png)
 
-When finished, figures will present the data of the simulation:
-
-![](/images/projects/model/simulationsFinished.png)
+When finished, figures will present the data of the simulation.
 
 In addition, three JSON files will be generated:
 
@@ -108,19 +106,19 @@ Notice that a different JSON file of type Trainned_model_"TAB_NAME".json will be
 
 Let's now simulate a case. First, we will simulate a subject with no impairments. We go to tab "Training" and we provide 2,000 trials. At the end of the simulation we will observe a symmetric lateralization in the distribution of direction tunned cells (the two windrose plots on the right):
 
-![](/images/projects/model/training.png)
+![](https://belenrubioballester.com/images/projects/model/training.png)
 
 Now let's move to the tab "Stroke" and let's provide 500 trials after generating a lesion. The results show a lack of cells devoted to the coding of movement directions toward the upper right corner:
 
-![](/images/projects/model/stroke.png)
+![](https://belenrubioballester.com/images/projects/model/stroke.png)
 
 In the tab Rehabilitation, we can simulate high-intensity Constraint-Induced Movement Therapy (CIMT) by introducing a 0.7 value (normalized scale) in the Field Force. After 2000 trials we observe recovery:
 
-![](/images/projects/model/recovery.png)
+![](https://belenrubioballester.com/images/projects/model/recovery.png)
 
 Moving to the last tab ("Follow-up") we can simulate an additional trial window of no-therapy. We can introduce 2000 trials to study the stability of the model's state after the rehabilitation treatment:
 
-![](/images/projects/model/followup.png)
+![](https://belenrubioballester.com/images/projects/model/followup.png)
 
 ## Built With
 
