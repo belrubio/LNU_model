@@ -1,3 +1,13 @@
+#!/usr/bin/python
+# ----------------------------------------------------------------------------
+# 2018, Belen Rubio Ballester
+#
+# Distributed under the terms of the GNU General Public License (GPL-3.0).
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+# ----------------------------------------------------------------------------
+#
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -16,7 +26,7 @@ from runSimulations import *
 
 # Notebook - Tab
 class tabGUI(tk.Frame):
-    def __init__(self, master, phase):
+    def __init__(self, master, phase, colorPalette):
         tk.Frame.__init__(self, master)
 
         # Get values for fields depending on phase (Training, Stroke...)
@@ -26,10 +36,8 @@ class tabGUI(tk.Frame):
         self.entryFields = self.getEntryFields(phase)
 
         # Vars for plotting
-        self.data1 = []
-        self.data2 = []
-        self.data3 = []
         self.f = None
+        self.colorPalette = colorPalette
 
         # layout all of the main containers
         top_frame = tk.Frame(self, bg='gray97', width=1360, height=10, pady=3)
@@ -41,25 +49,45 @@ class tabGUI(tk.Frame):
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        top_frame.grid(row=0, sticky="nsew")
-        self.center.grid(row=1, sticky="ew")
-        btm_frame.grid(row=2, sticky="nsew")
+        top_frame.grid(row=0, sticky='nsew')
+        self.center.grid(row=1, sticky='ew')
+        btm_frame.grid(row=2, sticky='nsew')
 
         # create the top frame widgets
         top_frame.grid_rowconfigure(0, weight=1)
         top_frame.grid_columnconfigure(1, weight=1)
         ctr_left = tk.Frame(
-            top_frame, bg='azure2', width=300, height=270, padx=3, pady=3)
+            top_frame,
+            bg=colorPalette[0],
+            width=300,
+            height=270,
+            padx=3,
+            pady=3)
         ctr_mid = tk.Frame(
-            top_frame, bg='mint cream', width=340, height=270, padx=3, pady=3)
+            top_frame,
+            bg=colorPalette[1],
+            width=340,
+            height=270,
+            padx=3,
+            pady=3)
         ctr_preright = tk.Frame(
-            top_frame, bg='LightCyan2', width=400, height=270, padx=3, pady=3)
+            top_frame,
+            bg=colorPalette[2],
+            width=400,
+            height=270,
+            padx=3,
+            pady=3)
         ctr_right = tk.Frame(
-            top_frame, bg='LightCyan2', width=300, height=270, padx=3, pady=3)
-        ctr_left.grid(row=0, column=0, sticky="nsew")
-        ctr_mid.grid(row=0, column=1, sticky="nsew")
-        ctr_preright.grid(row=0, column=2, sticky="nsew")
-        ctr_right.grid(row=0, column=3, sticky="nsew")
+            top_frame,
+            bg=colorPalette[2],
+            width=300,
+            height=270,
+            padx=3,
+            pady=3)
+        ctr_left.grid(row=0, column=0, sticky='nsew')
+        ctr_mid.grid(row=0, column=1, sticky='nsew')
+        ctr_preright.grid(row=0, column=2, sticky='nsew')
+        ctr_right.grid(row=0, column=3, sticky='nsew')
         ctr_right.configure(width=500)
 
         # Top dashboard ---------------------
@@ -72,39 +100,39 @@ class tabGUI(tk.Frame):
             self.center, bg='white', width=640, height=400, padx=3, pady=3)
         self.ctr_mid_right = tk.Frame(
             self.center,
-            bg='mint cream',
+            bg=colorPalette[1],
             width=700,
             height=400,
             padx=3,
             pady=3)
-        self.ctr_mid_mid.grid(row=1, column=1, sticky="nsew")
-        self.ctr_mid_right.grid(row=1, column=2, sticky="nsew")
+        self.ctr_mid_mid.grid(row=1, column=1, sticky='nsew')
+        self.ctr_mid_right.grid(row=1, column=2, sticky='nsew')
 
         # define style for labels
         model_label = tk.Label(
             ctr_mid,
             text=self.entryFields[0],
-            font=("Helvetica", 16),
+            font=('Helvetica', 16),
             anchor=tk.W,
             justify=tk.LEFT,
-            bg='mint cream')
+            bg=colorPalette[1])
         self.labels = []
         for i in range(len(self.entryFields) - 1):
             self.labels.append(
                 tk.Label(
                     ctr_mid,
                     text=self.entryFields[i + 1],
-                    bg='mint cream',
+                    bg=colorPalette[1],
                     anchor=tk.W))
 
         # define default values for the entries (free parameters)
         self.v = [
             tk.StringVar(ctr_mid, value='0.002'),
-            tk.StringVar(ctr_mid, value='0.01'),
-            tk.StringVar(ctr_mid, value='0.1'),
+            tk.StringVar(ctr_mid, value='0.005'),
+            tk.StringVar(ctr_mid, value='0.2'),
             tk.StringVar(ctr_mid, value='10'),
             tk.StringVar(ctr_mid, value='0.2'),
-            tk.StringVar(ctr_mid, value='2'),
+            tk.StringVar(ctr_mid, value='10'),
             tk.StringVar(ctr_mid, value='100'),
             tk.StringVar(ctr_mid, value='100'),
             tk.StringVar(ctr_mid, value='0'),
@@ -117,21 +145,21 @@ class tabGUI(tk.Frame):
                 tk.Entry(
                     ctr_mid,
                     textvariable=self.v[i],
-                    background="LightBlue3",
+                    background='white',
                     width=6))
 
         run_button = tk.Button(
             ctr_mid,
-            text="RUN SIMULATION",
-            bg="red",
+            text='RUN SIMULATION',
+            bg='red',
             command=self.startSimulation)
 
         # create the widgets for the top-left frame: SAVE/QUIT buttons
         save_button = tk.Button(
-            ctr_left, text="SAVE", bg="red", command=self.save)
+            ctr_left, text='SAVE', bg='red', command=self.save)
         save_button.grid(row=5, column=3)
         saveas_button = tk.Button(
-            ctr_left, text="SAVE AS", bg="red", command=self.file_save)
+            ctr_left, text='SAVE AS', bg='red', command=self.file_save)
         saveas_button.grid(row=10, column=3)
 
         # layout the widgets in the top frame
@@ -151,58 +179,58 @@ class tabGUI(tk.Frame):
             if (i > 7):
                 self.entries[i].grid(row=i - 7, column=6)
 
-        run_button.grid(row=9, column=3, sticky="sew")
+        run_button.grid(row=9, column=3, sticky='sew')
 
         # Define labels for the out summary values (in top right panel)
         self.labelR1 = tk.Label(
             ctr_right,
             text='Final State                           ',
-            font=("Helvetica", 16),
+            font=('Helvetica', 16),
             anchor=tk.W,
             justify=tk.LEFT,
-            bg='LightCyan2')
+            bg=colorPalette[2])
         self.labelR2 = tk.Label(
             ctr_right,
             text='P(R Hand selection): -',
             anchor=tk.W,
             justify=tk.LEFT,
-            bg='LightCyan2')
+            bg=colorPalette[2])
         self.labelR3 = tk.Label(
             ctr_right,
             text='Mean error L hand: -              ',
             anchor=tk.W,
             justify=tk.LEFT,
-            bg='LightCyan2')
+            bg=colorPalette[2])
         self.labelR4 = tk.Label(
             ctr_right,
             text='Mean error R hand: -',
             anchor=tk.W,
             justify=tk.LEFT,
-            bg='LightCyan2')
+            bg=colorPalette[2])
         self.labelR5 = tk.Label(
             ctr_right,
             text='Mean cost L hand: -',
             anchor=tk.W,
             justify=tk.LEFT,
-            bg='LightCyan2')
+            bg=colorPalette[2])
         self.labelR6 = tk.Label(
             ctr_right,
             text='Mean cost R hand: -',
             anchor=tk.W,
             justify=tk.LEFT,
-            bg='LightCyan2')
+            bg=colorPalette[2])
         self.labelR7 = tk.Label(
             ctr_right,
             text='Mean EReward L hand: -',
             anchor=tk.W,
             justify=tk.LEFT,
-            bg='LightCyan2')
+            bg=colorPalette[2])
         self.labelR8 = tk.Label(
             ctr_right,
             text='Mean EReward R hand: -',
             anchor=tk.W,
             justify=tk.LEFT,
-            bg='LightCyan2')
+            bg=colorPalette[2])
         self.labelR1.grid(row=1, column=1, sticky=tk.W)
         self.labelR2.grid(row=2, column=1, sticky=tk.W)
         self.labelR3.grid(row=3, column=1, sticky=tk.W)
@@ -220,11 +248,11 @@ class tabGUI(tk.Frame):
             length=600,
             mode='determinate')
         self.progressbar.pack(fill=tk.BOTH, side=tk.TOP)
-        self.progressbar["value"] = 0
+        self.progressbar['value'] = 0
 
-        about = "Ballester, B. R., Maier, M., Mozo, R. M. S. S., Castaneda, V., Duff, A., and Verschure, P. F. (2016). Counteracting learned non-use in chronic stroke patients with reinforcement-induced movement therapy. Journal of neuroengineering and rehabilitation, 13(1), 74.\n SPECS Lab, IBEC. Contact: brubio@ibecbarcelona.eu\n"
+        about = 'Ballester, B. R., Maier, M., Mozo, R. M. S. S., Castaneda, V., Duff, A., and Verschure, P. F. (2016). Counteracting learned non-use in chronic stroke patients with reinforcement-induced movement therapy. Journal of neuroengineering and rehabilitation, 13(1), 74.\n SPECS Lab, IBEC. Contact: brubio@ibecbarcelona.eu\n'
         T = tk.Label(
-            btm_frame, text=about, font=("Helvetica", 12), bg='gray97')
+            btm_frame, text=about, font=('Helvetica', 12), bg=colorPalette[2])
         T.pack()
 
         # Display a progress bar on the bottom frame
@@ -244,28 +272,33 @@ class tabGUI(tk.Frame):
         # set initial text
         self.style.configure('text.Horizontal.TProgressbar', text='0')
 
+    def movingaverage(self, values, window):
+        weights = np.repeat(1.0, window)/window
+        sma = np.convolve(values, weights, 'valid')
+        return sma
+
     # Middle dashboard ---------------------
     # Plot de results from simulations
     def drawTrialData(self, trialNum, rt, angle_per_trial, listOfAngles,
-                      probability_right, probability_left, error_right,
-                      error_left, error_extent_left, error_extent_right,
-                      expectedRewardLeft, expectedRewardRight, energy_R,
-                      energy_L, sensit_R, sensit_L):
+                      probability_left, probability_right, error_left,
+                      error_right, error_extent_left, error_extent_right,
+                      expectedRewardLeft, expectedRewardRight, energy_L,
+                      energy_R, sensit_L, sensit_R, choosen_per_trial):
 
-        self.labelR2["text"] = 'P(R Hand selection): ' + str(
+        self.labelR2['text'] = 'P(R Hand selection): ' + str(
             round(np.mean(probability_right), 3))
-        self.labelR3["text"] = 'Mean error L hand: ' + str(
-            round(np.mean(error_right) * 100, 3))
-        self.labelR4["text"] = 'Mean error R hand: ' + str(
-            round(np.mean(error_left) * 100, 3))
-        self.labelR5["text"] = 'Mean cost L hand: ' + str(
-            round(np.mean(energy_R), 3))
-        self.labelR6["text"] = 'Mean cost R hand: ' + str(
+        self.labelR3['text'] = 'Mean error L hand: ' + str(
+            round(np.mean(np.abs(error_left)) * 100, 3))
+        self.labelR4['text'] = 'Mean error R hand: ' + str(
+            round(np.mean(np.abs(error_right)) * 100, 3))
+        self.labelR5['text'] = 'Mean cost L hand: ' + str(
             round(np.mean(energy_L), 3))
-        self.labelR7["text"] = 'Mean EReward L hand: ' + str(
-            round(np.mean(expectedRewardRight), 3))
-        self.labelR8["text"] = 'Mean EReward R hand: ' + str(
+        self.labelR6['text'] = 'Mean cost R hand: ' + str(
+            round(np.mean(energy_R), 3))
+        self.labelR7['text'] = 'Mean EReward L hand: ' + str(
             round(np.mean(expectedRewardLeft), 3))
+        self.labelR8['text'] = 'Mean EReward R hand: ' + str(
+            round(np.mean(expectedRewardRight), 3))
 
         self.ctr_mid_mid.destroy()
         self.ctr_mid_right.destroy()
@@ -274,103 +307,162 @@ class tabGUI(tk.Frame):
             self.center, bg='white', width=640, height=400, padx=3, pady=3)
         self.ctr_mid_right = tk.Frame(
             self.center,
-            bg='mint cream',
+            bg=self.colorPalette[1],
             width=700,
             height=400,
             padx=3,
             pady=3)
-        self.ctr_mid_mid.grid(row=1, column=1, sticky="nsew")
-        self.ctr_mid_right.grid(row=1, column=2, sticky="nsew")
+        self.ctr_mid_mid.grid(row=1, column=1, sticky='nsew')
+        self.ctr_mid_right.grid(row=1, column=2, sticky='nsew')
+
+
+        binSet = np.degrees(
+                np.append(
+                    np.arange(0, (2 * np.pi), (2 * np.pi) / 12), [(2 * np.pi)]))
+        window = 1
+        if(int(self.entries[5].get()) > 50):
+            window = 50
+            print("SET WINDOW to 50 trials")
 
         # Setting the middle dashboard canvas for plotting
         # Figure 1
-        self.fig = Figure(figsize=(2.4, 3.6))
-        self.fig.suptitle('\nCost\n')
-        self.fig.patch.set_facecolor('white')
-        ax = self.fig.add_subplot(111, polar=True)
-        ax.patch.set_facecolor('lightgray')
-        ax.patch.set_alpha(0.2)
-        ax.tick_params(axis='both', which='major', labelsize=9)
-        ax.set_yticklabels([])
-        ax.plot(
-            np.radians(listOfAngles),
-            energy_L,
-            'r',
-            linewidth=1,
-            linestyle='solid')
-        ax.plot(
-            np.radians(listOfAngles),
-            energy_R,
-            'b',
-            linewidth=1,
-            linestyle='solid')
-        ax.fill(np.radians(listOfAngles), energy_L, 'r', alpha=0.1)
-        ax.fill(np.radians(listOfAngles), energy_R, 'b', alpha=0.1)
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.ctr_mid_mid)
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(side='left', fill='y', expand=True)
+        if (self.simulateRehab or self.simulateFU):
 
-        # Figure 2
-        self.fig2 = Figure(figsize=(2.4, 3.6))
-        self.fig2.suptitle('\nProbabilities\n')
-        self.fig2.patch.set_facecolor('white')
-        ax2 = self.fig2.add_subplot(111, polar=True)
-        ax2.patch.set_facecolor('lightgray')
-        ax2.patch.set_alpha(0.2)
-        ax2.tick_params(axis='both', which='major', labelsize=9)
-        ax2.set_yticklabels([])
-        ax2.plot(
-            np.radians(listOfAngles),
-            probability_left,
-            'b',
-            linewidth=1,
-            linestyle='solid')
-        ax2.plot(
-            np.radians(listOfAngles),
-            probability_right,
-            'r',
-            linewidth=1,
-            linestyle='solid')
-        ax2.fill(np.radians(listOfAngles), probability_left, 'b', alpha=0.1)
-        ax2.fill(np.radians(listOfAngles), probability_right, 'r', alpha=0.1)
-        self.canvas2 = FigureCanvasTkAgg(self.fig2, master=self.ctr_mid_mid)
-        self.canvas2.draw()
-        self.canvas2.get_tk_widget().pack(side='left', fill='y', expand=True)
+            y_LEFT = self.movingaverage(np.abs(error_left), window)
+            y_RIGHT = self.movingaverage(np.abs(error_right), window)
 
-        binSet = np.degrees(
-            np.append(
-                np.arange(0, (2 * np.pi), (2 * np.pi) / 12), [(2 * np.pi)]))
+            self.fig = Figure(figsize=(5, 3))
+            self.fig.suptitle('Directional Error')
+            self.fig.patch.set_facecolor('white')
+            ax = self.fig.add_subplot(111, polar=False)
+            ax.patch.set_facecolor('lightgray')
+            ax.patch.set_alpha(0.2)
+            ax.tick_params(axis='both', which='major', labelsize=9)
 
-        # Figure 3
-        self.fig3 = Figure(figsize=(2.4, 3.6))
-        self.fig3.suptitle('\nExpected Reward\n')
-        self.fig3.patch.set_facecolor('white')
-        ax3 = self.fig3.add_subplot(111, polar=True)
-        ax3.patch.set_facecolor('lightgray')
-        ax3.patch.set_alpha(0.2)
-        ax3.tick_params(axis='both', which='major', labelsize=9)
-        ws = np.arange((2 * np.pi) / 24, (2 * np.pi), (2 * np.pi) / 12)
-        bin_meansL = []
-        bin_meansR = []
-        bin_meansL, bin_edges, binnumber = stats.binned_statistic(
-            np.radians(listOfAngles),
-            expectedRewardLeft,
-            statistic='mean',
-            bins=12)
+            print("window")
+            print(np.arange(1, len(y_LEFT), 1))
+            print("y_LEFT")
+            print(y_LEFT)
 
-        bin_meansR, bin_edges, binnumber = stats.binned_statistic(
-            np.radians(listOfAngles),
-            expectedRewardRight,
-            statistic='mean',
-            bins=12)
+            ax.plot(
+                np.arange(1, len(y_LEFT), 1),
+                np.abs(y_LEFT[1:]), 'b')
+            ax.plot(
+                np.arange(1, len(y_RIGHT), 1),
+                np.abs(y_RIGHT[1:]),
+                'r')
+            ax.set_xlabel("Trial")
+            ax.set_ylabel("Degrees")
 
-        ax3.set_yticklabels([])
-        # Fill area
-        ax3.fill(ws, bin_meansL, 'r', alpha=0.2)
-        ax3.fill(ws, bin_meansR, 'b', alpha=0.2)
-        self.canvas3 = FigureCanvasTkAgg(self.fig3, master=self.ctr_mid_mid)
-        self.canvas3.draw()
-        self.canvas3.get_tk_widget().pack(side='left', fill='y', expand=True)
+            self.canvas = FigureCanvasTkAgg(self.fig, master=self.ctr_mid_mid)
+            self.canvas.draw()
+            self.canvas.get_tk_widget().pack(side='left', fill='y', expand=True)
+
+            self.fig = Figure(figsize=(5, 3))
+            self.fig.suptitle('Right hand use)')
+            self.fig.patch.set_facecolor('white')
+            ax = self.fig.add_subplot(111, polar=False)
+            ax.patch.set_facecolor('lightgray')
+            ax.patch.set_alpha(0.2)
+            ax.tick_params(axis='both', which='major', labelsize=9)
+            choosen_per_trial = self.movingaverage(choosen_per_trial, window)
+            ax.plot(
+                np.arange(1, len(choosen_per_trial), 1),
+                choosen_per_trial[1:], 'k')
+            ax.set_xlabel("Trial")
+            ax.set_ylabel("Probability")
+
+            self.canvas = FigureCanvasTkAgg(self.fig, master=self.ctr_mid_mid)
+            self.canvas.draw()
+            self.canvas.get_tk_widget().pack(side='left', fill='y', expand=True)
+
+
+        else:
+
+            self.fig = Figure(figsize=(2.4, 3.6))
+            self.fig.suptitle('\nCost\n')
+            self.fig.patch.set_facecolor('white')
+            ax = self.fig.add_subplot(111, polar=True)
+            ax.patch.set_facecolor('lightgray')
+            ax.patch.set_alpha(0.2)
+            ax.tick_params(axis='both', which='major', labelsize=9)
+            ax.set_yticklabels([])
+            ax.plot(
+                np.radians(listOfAngles),
+                energy_L,
+                'b',
+                linewidth=1,
+                linestyle='solid')
+            ax.plot(
+                np.radians(listOfAngles),
+                energy_R,
+                'r',
+                linewidth=1,
+                linestyle='solid')
+            ax.fill(np.radians(listOfAngles), energy_L, 'b', alpha=0.1)
+            ax.fill(np.radians(listOfAngles), energy_R, 'r', alpha=0.1)
+            self.canvas = FigureCanvasTkAgg(self.fig, master=self.ctr_mid_mid)
+            self.canvas.draw()
+            self.canvas.get_tk_widget().pack(side='left', fill='y', expand=True)
+
+            # Figure 2
+            self.fig2 = Figure(figsize=(2.4, 3.6))
+            self.fig2.suptitle('\nProbabilities\n')
+            self.fig2.patch.set_facecolor('white')
+            ax2 = self.fig2.add_subplot(111, polar=True)
+            ax2.patch.set_facecolor('lightgray')
+            ax2.patch.set_alpha(0.2)
+            ax2.tick_params(axis='both', which='major', labelsize=9)
+            ax2.set_yticklabels([])
+            ax2.plot(
+                np.radians(listOfAngles),
+                probability_left,
+                'b',
+                linewidth=1,
+                linestyle='solid')
+            ax2.plot(
+                np.radians(listOfAngles),
+                probability_right,
+                'r',
+                linewidth=1,
+                linestyle='solid')
+            ax2.fill(np.radians(listOfAngles), probability_left, 'b', alpha=0.1)
+            ax2.fill(np.radians(listOfAngles), probability_right, 'r', alpha=0.1)
+            self.canvas2 = FigureCanvasTkAgg(self.fig2, master=self.ctr_mid_mid)
+            self.canvas2.draw()
+            self.canvas2.get_tk_widget().pack(side='left', fill='y', expand=True)
+
+
+            # Figure 3
+            self.fig3 = Figure(figsize=(2.4, 3.6))
+            self.fig3.suptitle('\nExpected Reward\n')
+            self.fig3.patch.set_facecolor('white')
+            ax3 = self.fig3.add_subplot(111, polar=True)
+            ax3.patch.set_facecolor('lightgray')
+            ax3.patch.set_alpha(0.2)
+            ax3.tick_params(axis='both', which='major', labelsize=9)
+            ws = np.arange((2 * np.pi) / 24, (2 * np.pi), (2 * np.pi) / 12)
+            bin_meansL = []
+            bin_meansR = []
+            bin_meansL, bin_edges, binnumber = stats.binned_statistic(
+                np.radians(listOfAngles),
+                expectedRewardLeft,
+                statistic='mean',
+                bins=12)
+
+            bin_meansR, bin_edges, binnumber = stats.binned_statistic(
+                np.radians(listOfAngles),
+                expectedRewardRight,
+                statistic='mean',
+                bins=12)
+
+            ax3.set_yticklabels([])
+            # Fill area
+            ax3.fill(ws, bin_meansL, 'b', alpha=0.2)
+            ax3.fill(ws, bin_meansR, 'r', alpha=0.2)
+            self.canvas3 = FigureCanvasTkAgg(self.fig3, master=self.ctr_mid_mid)
+            self.canvas3.draw()
+            self.canvas3.get_tk_widget().pack(side='left', fill='y', expand=True)
 
         # Figure 4
         # Wind-rose like a stacked histogram with normed results (in percent)
@@ -429,36 +521,32 @@ class tabGUI(tk.Frame):
             self.paramsRehab[1] = float(self.entries[9].get())
             self.paramsRehab[2] = float(self.entries[10].get())
 
-        runSimulations(self, float(self.entries[0].get()),
-                       float(self.entries[1].get()),
-                       float(self.entries[2].get()),
-                       float(self.entries[3].get()),
-                       float(self.entries[4].get()),
-                       int(self.entries[5].get()),
-                       int(self.entries[6].get()),
-                       int(self.entries[7].get()), self.simulateStroke,
-                       self.simulateRehab, self.simulateFU,
-                       self.paramsRehab[0], self.paramsRehab[1],
-                       self.paramsRehab[2])
+        runSimulations(
+            self, float(self.entries[0].get()), float(self.entries[1].get()),
+            float(self.entries[2].get()), float(self.entries[3].get()),
+            float(self.entries[4].get()), int(self.entries[5].get()),
+            int(self.entries[6].get()), int(self.entries[7].get()),
+            self.simulateStroke, self.simulateRehab, self.simulateFU,
+            self.paramsRehab[0], self.paramsRehab[1], self.paramsRehab[2])
 
     # Save the current free paramenters indicated in entry fields
     def save(self):
-        if self.f is None:  # return `None` if dialog closed with "cancel".
+        if self.f is None:  # return `None` if dialog closed with 'cancel'.
             self.file_save()
         else:
             f = open(self.f.name, 'wb')
             for item in self.v:
-                f.write("%s\n" % item.get())
+                f.write('%s\n' % item.get())
             f.close()
 
     # Save AS.. the current free paramenters indicated in entry fields
     def file_save(self):
-        self.f = filedialog.asksaveasfile(mode='w', defaultextension=".txt")
+        self.f = filedialog.asksaveasfile(mode='w', defaultextension='.txt')
         f = self.f
-        if f is None:  # return `None` if dialog closed with "cancel".
+        if f is None:  # return `None` if dialog closed with 'cancel'.
             return
         for item in self.v:
-            f.write("%s\n" % item.get())
+            f.write('%s\n' % item.get())
         f.close()
 
     # Play animation of each trial simulation
@@ -485,9 +573,9 @@ class tabGUI(tk.Frame):
             pl.close_gui()
         else:
             # Play trial animation
-            ac, pacR, pacL = pl.gui(
+            ac, pacL, pacR = pl.gui(
                 armAngleG, foreArmAngleG, targetXG, targetYG, selectedHand,
-                acR, acL, pacR, pacL, ac, expR_R, expR_L, startTime, currentT)
+                acL, acR, pacL, pacR, ac, expR_L, expR_R, startTime, currentT)
 
         return ac, pacR, pacL
 
@@ -544,3 +632,5 @@ class tabGUI(tk.Frame):
             'RB Learning Rate:', 'Exploration Level:', 'NP Arm Bias:',
             'Number of Trials:', 'Show 5 trials at:', '& at'
         ])
+
+

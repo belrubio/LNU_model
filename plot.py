@@ -1,3 +1,14 @@
+#!/usr/bin/python
+# ----------------------------------------------------------------------------
+# 2018, Belen Rubio Ballester
+# belen.rubio.ballester@gmail.com
+# Diogo Santos Pata
+# diogo.santos.pata@gmail.com
+# Distributed under the terms of the GNU General Public License (GPL-3.0).
+# The full license is in the file COPYING.txt, distributed with this software.
+# ----------------------------------------------------------------------------
+#
+
 from __future__ import division
 import pygame
 import numpy as np
@@ -22,13 +33,13 @@ def gui(
         targetXG=0,  # X location of target
         targetYG=0,  # Y location of target
         selectedHand=-1,
-        acR=0,  # accumulator list of values Right
-        acL=0,  # accumulator list of values Left
-        acRprev=0,  # previous accumulator value Right
-        acLprev=0,  # previous accumulator value Left
+        acL=0,  # accumulator list of values Right
+        acR=0,  # accumulator list of values Left
+        acLprev=0,  # previous accumulator value Right
+        acRprev=0,  # previous accumulator value Left
         ac=0,
-        expR_R=0,  # Expected Value for Right Hand
-        expR_L=0,  # Expected Value for Left Hand
+        expR_L=0,  # Expected Value for Right Hand
+        expR_R=0,  # Expected Value for Left Hand
         startTime=0,  # Trial time onset
         currentT=0):  # Current Time stamp
 
@@ -45,7 +56,7 @@ def gui(
     leftShoulderPos = [260, 300]
     leftArmAngle = -160
     leftForeArmAngle = 132.4 + leftArmAngle
-    Energy = calculateEnergies.getEnergy()
+    energy = calculateEnergies.getEnergy()
 
     if selectedHand == 1:
         rightArmAngle = armAngleG
@@ -131,10 +142,10 @@ def gui(
     pygame.draw.rect(screen, (209, 238, 238), [610, 420, 150, 150],
                      0)  # workspace
     pygame.draw.line(screen, (50, 50, 50), [700, 490],
-                     [700, energLevelRight - energy[0] * 2000],
+                     [700, energLevelRight-energy[1] * 2000],
                      12)  # energy right
     pygame.draw.line(screen, (50, 50, 50), [650, 490],
-                     [650, energLevelLeft - energy[1] * 2000],
+                     [650, energLevelLeft-energy[0] * 2000],
                      12)  # energy left
     pygame.draw.polygon(screen, (25, 25, 25),
                         ((670, 180), (690, 180), (690, 190), (700, 190),
@@ -169,7 +180,7 @@ def gui(
     pygame.display.flip()
     time.sleep(0.01)
 
-    return ac, acR, acL
+    return ac, acL, acR
 
 
 def accumulatorsFunc(x, y, screen, font, rgb, initY):

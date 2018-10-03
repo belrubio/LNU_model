@@ -1,3 +1,14 @@
+#!/usr/bin/python
+# ----------------------------------------------------------------------------
+# 2018, Belen Rubio Ballester
+# belen.rubio.ballester@gmail.com
+# SPECS Lab. Institute of Bioengineering of Catalunya
+#
+# Distributed under the terms of the GNU General Public License (GPL-3.0).
+# The full license is in the file COPYING.txt, distributed with this software.
+# ----------------------------------------------------------------------------
+#
+
 from runSimulations import *
 
 
@@ -74,7 +85,7 @@ def fDirectionCoding(leftCortex, rightCortex, angleTarget):
         np.sqrt(tangSumRight[0]**2 + tangSumRight[1]**2))
 
     return directionRight, directionLeft, errorRight, errorLeft, \
-        tangSumLeft,  tangSumRight
+        tangSumRight,  tangSumLeft
 
 
 def extentCodingFunc(leftCortex_extent, rightCortex_extent, newExtentL,

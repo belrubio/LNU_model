@@ -1,3 +1,13 @@
+#!/usr/bin/python
+# ----------------------------------------------------------------------------
+# 2018, Belen Rubio Ballester
+# belen.rubio.ballester@gmail.com
+
+# Distributed under the terms of the GNU General Public License (GPL-3.0).
+# The full license is in the file COPYING.txt, distributed with this software.
+# ----------------------------------------------------------------------------
+#
+
 import numpy as np
 import scipy.signal
 import time
@@ -25,12 +35,15 @@ listStrings = ['RIGHT', 'LEFT']
 fs = 10
 Nstep = 41
 aux = np.ones(Nstep) * np.nan
+
+
+global Energy
 Energy = [0, 0]
 
 
 def fComputeEnergies(vector, angleTarget):
 
-    """Compute Energies or Costs associated to each arm's planned movement
+    '''Compute Energies or Costs associated to each arm's planned movement
 
     Parameters:
         vector: movement trajectory vector
@@ -40,10 +53,7 @@ def fComputeEnergies(vector, angleTarget):
         energy: cost values associated to each arm's reaching movement
         all_s_angles (in eulers): shoulders angles sequence to be executed
         all_e_angles (in eulers): elbows angles sequence to be executed
-
-    """
-
-    global Energy
+    '''
 
     auxx = np.ones(Nstep) * np.nan
     all_s_angles = np.ones((Nstep, 2)) * np.nan

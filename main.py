@@ -1,3 +1,15 @@
+#!/usr/bin/python
+# ----------------------------------------------------------------------------
+# 2018, Belen Rubio Ballester
+# belen.rubio.ballester@gmail.com
+# SPECS Lab. Institute of Bioengineering of Catalunya
+#
+# Distributed under the terms of the GNU General Public License (GPL-3.0).
+# The full license is in the file COPYING.txt, distributed with this software.
+# ----------------------------------------------------------------------------
+#
+
+
 import matplotlib
 matplotlib.use("TkAgg")
 import tkinter as tk
@@ -5,14 +17,12 @@ import ttk
 import numpy as np
 from tabGUI import *
 
-# Owned
-__author__ = “Belen Rubio Ballester”
-__copyright__ = “Copyright 2018, Model of learned non-use and recovery”
-__license__ = “MPL 2.0”
-__version__ = “0.1.0”
-__maintainer__ = “Belen Rubio Ballester”
-__email__ = “belen.rubio.ballester@gmail.com”
-__status__ = “Dev”
+
+# Color palettes
+COLOR_TRAINING = ['Azure3', 'MintCream', 'Azure2', 'LightBlue3']
+COLOR_STROKE = ['AntiqueWhite3', 'AntiqueWhite', 'AntiqueWhite2', "LightBlue3"]
+COLOR_THERAPY = ['Honeydew3', 'Honeydew', 'Honeydew2', "mintcream"]
+COLOR_FOLLOWUP = ['Snow3', 'whitesmoke', 'Snow2', "mintcream"]
 
 
 # Root class to create the interface and define the controller function to
@@ -39,10 +49,10 @@ class NoteBook(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
         self.notebook = ttk.Notebook()
-        self.tab1 = tabGUI(self.notebook, 'Training')
-        self.tab2 = tabGUI(self.notebook, 'Stroke')
-        self.tab3 = tabGUI(self.notebook, 'Rehab')
-        self.tab4 = tabGUI(self.notebook, 'Followup')
+        self.tab1 = tabGUI(self.notebook, 'Training', COLOR_TRAINING)
+        self.tab2 = tabGUI(self.notebook, 'Stroke', COLOR_STROKE)
+        self.tab3 = tabGUI(self.notebook, 'Rehab', COLOR_THERAPY)
+        self.tab4 = tabGUI(self.notebook, 'Followup', COLOR_FOLLOWUP)
         self.notebook.add(self.tab1, text="Training")
         self.notebook.add(self.tab2, text="Stroke")
         self.notebook.add(self.tab3, text="Recovery")
@@ -54,5 +64,5 @@ if __name__ == "__main__":
     Root = RootApp()
     Root.resizable(width=False, height=False)
     Root.geometry("1360x1060")
-    Root.title("Recovery Model Interface")
+    Root.title("LNU Recovery Model Interface")
     Root.mainloop()

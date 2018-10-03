@@ -1,4 +1,15 @@
 #!/usr/bin/python
+# ----------------------------------------------------------------------------
+# 2018, Belen Rubio Ballester
+# Diogo Santos Pata
+# diogo.santos.pata@gmail.com
+# SPECS Lab. Institute of Bioengineering of Catalunya
+#
+# Distributed under the terms of the GNU General Public License (GPL-3.0).
+# The full license is in the file COPYING.txt, distributed with this software.
+# ----------------------------------------------------------------------------
+#
+
 import math
 import random
 import numpy as np

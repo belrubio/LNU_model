@@ -1,3 +1,15 @@
+#!/usr/bin/python
+# ----------------------------------------------------------------------------
+# 2018, Belen Rubio Ballester
+# belen.rubio.ballester@gmail.com
+# SPECS Lab. Institute of Bioengineering of Catalunya
+#
+# Distributed under the terms of the GNU General Public License (GPL-3.0).
+# The full license is in the file COPYING.txt, distributed with this software.
+# ----------------------------------------------------------------------------
+#
+
+
 import numpy as np
 import random
 import time
@@ -126,7 +138,7 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
                 possibleAngles[auxShuffle] = possibleAngles[x]
                 possibleAngles[x] = auxShuffle_2
 
-    # Vector to target
+        # Vector to target
         a = [(-0.2 + math.cos(newdAngle)), (math.sin(newdAngle))]
         newExtentR = np.linalg.norm(a)
         b = [(0.2 + math.cos(newdAngle)), (math.sin(newdAngle))]
@@ -146,12 +158,12 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         pacL = 0
         pacR = 0
         ac = 0
-        choosenH = []
 
-        directionRight, directionLeft, errorR, errorL, dvL, dvR = \
+        # Left cortex -> right hand direction (Notice that we reverse it here)
+        directionLeft, directionRight, errorL, errorR, dvL, dvR = \
             fDirectionCoding(leftCortex, rightCortex, newdAngle)
 
-        extentRight, extentLeft, errorRight_e, errorLeft_e = extentCodingFunc(
+        extentLeft, extentRight, errorLeft_e, errorRight_e = extentCodingFunc(
             leftCortex_extent, rightCortex_extent, newExtentL, newExtentR,
             newdAngle)
 
@@ -160,14 +172,14 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
 
             [energies, angleShoulder,
              angleElbow] = calculateEnergies.fComputeEnergies(
-                 np.vstack((dvR, dvL)) / 3., newdAngle)
+                 np.vstack((dvL, dvR)) / 3., newdAngle)
 
             # Old method foe hand selection reported in Han et al. 2008
             # We do not use it for hand selection anymore but only to
             # obtain expected reward scores:
             [expRewardL, expRewardR, p_left, p_right] = returnHandChoice(
                 newdAngle, choiceLeft, choiceRight, leftArm, rightArm,
-                directionRight, directionLeft, 0, Exploration_Level)
+                directionLeft, directionRight, 0, Exploration_Level)
 
             # Show 5 consecutive trials
             if (e >= in_showTrial1
@@ -204,23 +216,23 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
                 key=abs))
         expected_L.append(expRewardL)
         expected_R.append(expRewardR)
-        energy_L.append(energies[1])
-        energy_R.append(energies[0])
+        energy_L.append(energies[0])
+        energy_R.append(energies[1])
 
         if (simulateRehab):
             errorAngle = min(
-                newdAngle - directionLeft,
-                newdAngle - directionLeft + 2 * math.pi,
-                newdAngle - directionLeft - 2 * math.pi,
+                newdAngle - directionRight,
+                newdAngle - directionRight + 2 * math.pi,
+                newdAngle - directionRight - 2 * math.pi,
                 key=abs)
             STEER_help = STEER
-            directionLeft = directionLeft + (errorAngle * STEER_help)
+            directionRight = directionRight + (errorAngle * STEER_help)
 
-            if (directionLeft >= (2 * math.pi)):
-                directionLeft = directionLeft - (2 * math.pi)
+            if (directionRight >= (2 * math.pi)):
+                directionRight = directionRight - (2 * math.pi)
             else:
-                if (directionLeft < 0):
-                    directionLeft = directionLeft + (2 * math.pi)
+                if (directionRight < 0):
+                    directionRight = directionRight + (2 * math.pi)
 
             if (random.uniform(0, 1) < FORCED_TRIAL):
                 choosenHand = 1
@@ -245,7 +257,7 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
                 weightListCheckLeft.append(choiceLeft[p].weight)
                 weightListCheckRight.append(choiceRight[p].weight)
 
-        if (choosenHand == 0):
+        if (choosenHand == 1):
             actualReward = math.exp(-((min(
                 newdAngle - directionRight,
                 newdAngle - directionRight + 2 * math.pi,
@@ -263,7 +275,7 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         predictionErrorL = actualReward - expRewardL
         predictionErrorR = actualReward - expRewardR
 
-        # Apply learning rule to improve direction coding
+        # Apply learning rule (RB) without crossed lateralization
         if (choosenHand == 1):
             # cortex left
             for i in range(len(choiceRight)):
@@ -287,22 +299,22 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
                                 key=abs))**2 / (math.pi / 10)**2))
 
         # Store trial state and apply learning rule to improve extent conding
+        # with crossed lateralization
         if (choosenHand == 1):
             sensitivityUpdateLeft = []
             sumOfSquareActivitiesLeft = 0
             for i in range(len(leftCortex)):
                 sumOfSquareActivitiesLeft += leftCortex[i].activity
-
+                sensitivityUpdateLeft.append(math.degrees(leftCortex[i].learningRuleFunc(directionRight, newdAngle, in_EBLR, in_UDLR)))
             for i in range(len(leftCortex_extent)):
                 leftCortex_extent[i].learningRuleFunc_extent(errorLeft_e)
 
         if (choosenHand == 0):
             sensitivityUpdateRight = []
             sumOfSquareActivitiesRight = 0
-
             for i in range(len(rightCortex)):
                 sumOfSquareActivitiesRight += rightCortex[i].activity
-
+                sensitivityUpdateRight.append(math.degrees(rightCortex[i].learningRuleFunc(directionLeft, newdAngle, in_EBLR, in_UDLR)))
             for i in range(len(rightCortex_extent)):
                 rightCortex_extent[i].learningRuleFunc_extent(errorRight_e)
 
@@ -337,18 +349,18 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         newExtentR = np.linalg.norm(a)
         b = [(0.2 + math.cos(angle)), (math.sin(angle))]
         newExtentL = np.linalg.norm(b)
-        [directionRight, directionLeft, errorR, errorL, dvL, dvR] = \
+        [directionLeft, directionRight, errorL, errorR, dvL, dvR] = \
             fDirectionCoding(leftCortex, rightCortex, angle)
         [expRewardL, expRewardR, p_left, p_right] = returnHandChoice(
-            angle, choiceLeft, choiceRight, leftArm, rightArm, directionRight,
-            directionLeft, 0, Exploration_Level)
+            angle, choiceLeft, choiceRight, leftArm, rightArm, directionLeft,
+            directionRight, 0, Exploration_Level)
         probability_right.append(p_right)
         probability_left.append(p_left)
         error_right.append(errorR)
         error_left.append(errorL)
         expectedRewardL.append(expRewardL)
         expectedRewardR.append(expRewardR)
-        extentRight, extentLeft, errorRight_e, errorLeft_e = extentCodingFunc(
+        extentLeft, extentRight, errorLeft_e, errorRight_e = extentCodingFunc(
             leftCortex_extent, rightCortex_extent, newExtentL, newExtentR,
             newdAngle)
         error_extent_right.append(errorRight_e)
@@ -359,9 +371,9 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
             error.append(errorL)
         [energies, angleShoulder,
          angleElbow] = calculateEnergies.fComputeEnergies(
-             np.vstack((dvR, dvL)) / 3., angle)
-        energy_L.append(energies[1])
-        energy_R.append(energies[0])
+             np.vstack((dvL, dvR)) / 3., angle)
+        energy_L.append(energies[0])
+        energy_R.append(energies[1])
 
     sensitivityLeft = []
     sensitivityRight = []
@@ -374,10 +386,7 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         weight_extent_Right.append(rightCortex_extent[j].weight)
 
     # Show plots of current model state
-    UI.drawTrialData(e, rt, angle_per_trial, possibleAngles, probability_right,
-                     probability_left, error_right, error_left, errorRight_e,
-                     errorLeft_e, expectedRewardR, expectedRewardL, energy_R,
-                     energy_L, sensitivityRight, sensitivityLeft)
+    UI.drawTrialData(e, rt, angle_per_trial, possibleAngles, probability_left, probability_right, errorLeft_angle, errorRight_angle, errorLeft_extent, errorRight_extent, expectedRewardL, expectedRewardR, energy_L, energy_R, sensitivityLeft, sensitivityRight, choosen_per_trial)
 
     # Save JSON files with current model state for future recovery or analysis
     meanProbLeft = []
@@ -529,9 +538,9 @@ def updateModelParams(Nchoice, simulateStroke, simulateRehab, simulateFU, N,
 
             for i in range(N_extent):
                 leftCortex_extent[
-                    i].weight = 0.3  # update activity of each cell
+                    i].weight = 0.3  # set baseline activity of each cell
                 rightCortex_extent[
-                    i].weight = 0.3  # update activity of each cell
+                    i].weight = 0.3  # set baseline activity of each cell
 
             # Weights should be initialized to...
             choiceLeft = [
