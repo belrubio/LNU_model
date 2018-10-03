@@ -9,7 +9,7 @@
 
 ### **Description**
 
-Implementation of a computational functional model of recovery after stroke that establishes a closed loop between arm use, functional recovery, and cortical reorganization (Han et al., 2008; Hidaka et al., 2012; Schweighofer et al., 2009). We extended and applied this model to formulate predictions about the clinical outcome of different therapy combinations based on constraint induced movement therapy and reinforcement. 
+Implementation of a computational functional model of recovery after stroke that establishes a closed loop between arm use, functional recovery, and cortical reorganization (Han et al., 2008; Hidaka et al., 2012; Schweighofer et al., 2009). We extended and applied this model to formulate predictions about the clinical outcome of different therapy combinations based on constraint induced movement therapy and reinforcement. Please, if you reuse this code, reference to: Ballester, Belén Rubio, et al. "Counteracting learned non-use in chronic stroke patients with reinforcement-induced movement therapy." Journal of neuroengineering and rehabilitation 13.1 (2016): 74.
 
 ### **Getting Started**
 
