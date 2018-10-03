@@ -38,7 +38,7 @@ pip install python3-tk
 
 The deployment is pretty basic. After running the software a GUI will appear:
 
-![](/images/projects/model/mainWindow.png)
+![](https://belenrubioballester.com/images/projects/model/mainWindow.png)
 
 The save buttons on the top left corner will generate a text file and save a list of the values given to the free parameters. Please notice that the free parameters introduced by default correspond with those reported in [Han et al., 2008](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1000133) and [Ballester et al., 2016](https://jneuroengrehab.biomedcentral.com/articles/10.1186/s12984-016-0178-x). 
 
