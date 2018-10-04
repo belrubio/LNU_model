@@ -37,6 +37,7 @@ def getBounded(direction):
     else:
         if (direction < 0):
             direction = direction + (2*np.pi)
+    return direction
 
 
 def runSimulations(
