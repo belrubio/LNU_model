@@ -31,7 +31,23 @@ def getDiffAngle(a, b):
     return min(a - b, a - b + 2*np.pi, a - b - 2*np.pi, key=abs)
 
 
-def runSimulations(UI, UseDependentLearning, ErrorBasedLearning, ReinforcementBasedLearning, Exploration_Level, in_RD, trials, in_showTrial1, in_showTrial2, simulateStroke, simulateRehab, simulateFU, FORCED_TRIAL, GAIN, STEER):
+def runSimulations(
+    UI,
+    UseDependentLearning,
+    ErrorBasedLearning,
+    ReinforcementBasedLearning,
+    Exploration_Level,
+    in_RD,
+    trials,
+    in_showTrial1,
+    in_showTrial2,
+    simulateStroke,
+    simulateRehab,
+    simulateFU,
+    FORCED_TRIAL,
+    GAIN,
+    STEER,
+    ):
     """Generates simulations,
     when done it plots and saves json files of the final model state.
 
@@ -63,19 +79,25 @@ def runSimulations(UI, UseDependentLearning, ErrorBasedLearning, ReinforcementBa
     N = 500
     N_extent = 20
     Nchoice = 10
-    leftCortex_extent = [
-        Net(math.radians(i * float(360.00 / N_extent)), "left")
-        for i in range(N_extent)
-    ]
-    rightCortex_extent = [
-        Net(math.radians(i * float(360.00 / N_extent)), "right")
-        for i in range(N_extent)
-    ]
+    leftCortex_extent = [Net(math.radians(i * float(360.00
+                         / N_extent)), 'left') for i in range(N_extent)]
+    rightCortex_extent = [Net(math.radians(i * float(360.00
+                          / N_extent)), 'right') for i in
+                          range(N_extent)]
 
     # Update model state
-    leftCortex, rightCortex, choiceLeft, choiceRight = updateModelParams(
-        Nchoice, simulateStroke, simulateRehab, simulateFU, N, N_extent,
-        leftCortex_extent, rightCortex_extent)
+    (leftCortex, rightCortex, choiceLeft, choiceRight) = \
+        updateModelParams(
+        Nchoice,
+        simulateStroke,
+        simulateRehab,
+        simulateFU,
+        N,
+        N_extent,
+        leftCortex_extent,
+        rightCortex_extent,
+        )
+
 
     spatialRangeLeft = (90, 270)  # define angles workspace of left arm
     spatialRangeRight = (270, 90)  # define angles workspace of right arm
@@ -114,15 +136,14 @@ def runSimulations(UI, UseDependentLearning, ErrorBasedLearning, ReinforcementBa
 
     for e in range(trials):
 
-        UI.progressbar["maximum"] = trials
-        UI.progressbar["value"] = e
-        UI.style.configure(
-            'text.Horizontal.TProgressbar',
-            text='{:g}'.format(e))  # update label
+        UI.progressbar['maximum'] = trials
+        UI.progressbar['value'] = e
+        UI.style.configure('text.Horizontal.TProgressbar',
+                           text='{:g}'.format(e))  # update label
         UI.progressbar.update()
         newdAngle = math.radians(possibleAngles[e % nInput])
 
-        if ((e % nInput) == 0):
+        if e % nInput == 0:
             for x in range(nInput):
                 auxShuffle = int(np.random.uniform(0, nInput))
                 auxShuffle_2 = possibleAngles[auxShuffle]
