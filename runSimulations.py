@@ -11,7 +11,6 @@
 
 
 import numpy as np
-import random
 import time
 import matplotlib.pyplot as plt
 from motorCortexNet import *
@@ -26,6 +25,11 @@ import main
 energies = [0, 0]
 expRewardL = 0
 expRewardR = 0
+
+
+def getDiffAngle(a, b):
+    return min(a - b, a - b + 2*np.pi, a - b - 2*np.pi, key=abs)
+
 
 def runSimulations(UI, UseDependentLearning, ErrorBasedLearning, ReinforcementBasedLearning, Exploration_Level, in_RD, trials, in_showTrial1, in_showTrial2, simulateStroke, simulateRehab, simulateFU, FORCED_TRIAL, GAIN, STEER):
     """Generates simulations,
@@ -120,7 +124,7 @@ def runSimulations(UI, UseDependentLearning, ErrorBasedLearning, ReinforcementBa
 
         if ((e % nInput) == 0):
             for x in range(nInput):
-                auxShuffle = int(random.uniform(0, nInput))
+                auxShuffle = int(np.random.uniform(0, nInput))
                 auxShuffle_2 = possibleAngles[auxShuffle]
                 possibleAngles[auxShuffle] = possibleAngles[x]
                 possibleAngles[x] = auxShuffle_2
@@ -165,6 +169,8 @@ def runSimulations(UI, UseDependentLearning, ErrorBasedLearning, ReinforcementBa
             [expRewardL, expRewardR, p_left, p_right] = returnHandChoice(
                 newdAngle, choiceLeft, choiceRight, leftArm, rightArm,
                 directionLeft, directionRight, 0, Exploration_Level)
+            direc_errorR = getDiffAngle(newdAngle, directionRight)
+            direc_errorL = getDiffAngle(newdAngle, directionLeft)
 
             # Show 5 consecutive trials
             if (e >= in_showTrial1
@@ -189,37 +195,24 @@ def runSimulations(UI, UseDependentLearning, ErrorBasedLearning, ReinforcementBa
         angle_per_trial.append(newdAngle)
         errorLeft_extent.append(errorLeft_e)
         errorRight_extent.append(errorRight_e)
-        errorLeft_angle.append(
-            min(newdAngle - directionLeft,
-                newdAngle - directionLeft + 2 * math.pi,
-                newdAngle - directionLeft - 2 * math.pi,
-                key=abs))
-        errorRight_angle.append(
-            min(newdAngle - directionRight,
-                newdAngle - directionRight + 2 * math.pi,
-                newdAngle - directionRight - 2 * math.pi,
-                key=abs))
+        errorLeft_angle.append(direc_errorL)
+        errorRight_angle.append(direc_errorR)
         expected_L.append(expRewardL)
         expected_R.append(expRewardR)
         energy_L.append(energies[0])
         energy_R.append(energies[1])
 
         if (simulateRehab):
-            errorAngle = min(
-                newdAngle - directionRight,
-                newdAngle - directionRight + 2 * math.pi,
-                newdAngle - directionRight - 2 * math.pi,
-                key=abs)
             STEER_help = STEER
-            directionRight = directionRight + (errorAngle * STEER_help)
+            directionRight = directionRight + (direc_errorR * STEER_help)
 
-            if (directionRight >= (2 * math.pi)):
-                directionRight = directionRight - (2 * math.pi)
+            if (directionRight >= (2*np.pi)):
+                directionRight = directionRight - (2*np.pi)
             else:
                 if (directionRight < 0):
-                    directionRight = directionRight + (2 * math.pi)
+                    directionRight = directionRight + (2*np.pi)
 
-            if (random.uniform(0, 1) < FORCED_TRIAL):
+            if (np.random.uniform(0, 1) < FORCED_TRIAL):
                 choosenHand = 1
 
         if (e >= in_showTrial1
@@ -243,17 +236,9 @@ def runSimulations(UI, UseDependentLearning, ErrorBasedLearning, ReinforcementBa
                 weightListCheckRight.append(choiceRight[p].weight)
 
         if (choosenHand == 1):
-            actualReward = math.exp(-((min(
-                newdAngle - directionRight,
-                newdAngle - directionRight + 2 * math.pi,
-                newdAngle - directionRight - 2 * math.pi,
-                key=abs)**2) / 0.2**2)) - (math.sqrt(errorRight_e**2) * 0.1)
+            actualReward = math.exp(-((direc_errorR**2) / 0.2**2)) - (math.sqrt(errorRight_e**2) * 0.1)
         else:
-            actualReward = math.exp(-((
-                min(newdAngle - directionLeft,
-                    newdAngle - directionLeft + 2 * math.pi,
-                    newdAngle - directionLeft - 2 * math.pi,
-                    key=abs)**2) / 0.2**2)) - (math.sqrt(errorLeft_e**2) * 0.1)
+            actualReward = math.exp(-((direc_errorL**2) / 0.2**2)) - (math.sqrt(errorLeft_e**2) * 0.1)
 
         actualReward_logs.append(actualReward)
 
@@ -266,22 +251,14 @@ def runSimulations(UI, UseDependentLearning, ErrorBasedLearning, ReinforcementBa
             for i in range(len(choiceRight)):
                 choiceRight[i].weight += ReinforcementBasedLearning * \
                     predictionErrorR * math.exp(
-                        -((min(
-                            newdAngle - choiceRight[i].center,
-                            newdAngle - choiceRight[i].center + 2 * math.pi,
-                            newdAngle - choiceRight[i].center - 2 * math.pi,
-                            key=abs))**2 / (math.pi / 10)**2))
+                        -(getDiffAngle(newdAngle, choiceRight[i].center)**2 / (np.pi / 10)**2))
 
         if (choosenHand == 0):
             # cortex right
             for i in range(len(choiceRight)):
                 choiceLeft[i].weight += ReinforcementBasedLearning * \
                     predictionErrorL * math.exp(
-                        -((min(
-                                newdAngle - choiceLeft[i].center,
-                                newdAngle - choiceLeft[i].center + 2 * math.pi,
-                                newdAngle - choiceLeft[i].center - 2 * math.pi,
-                                key=abs))**2 / (math.pi / 10)**2))
+                        -(getDiffAngle(newdAngle, choiceLeft[i].center)**2 / (np.pi / 10)**2))
 
         # Store trial state and apply learning rule to improve extent conding
         # with crossed lateralization
@@ -469,12 +446,12 @@ def updateModelParams(Nchoice, simulateStroke, simulateRehab, simulateFU, N,
             del leftCortex[neuron]
 
         choiceLeft = [
-            ActionChoiceClass("left", (i * 2 * math.pi / Nchoice),
+            ActionChoiceClass("left", (i * 2*np.pi / Nchoice),
                               f['weightListCheckLeft'][i], 0)
             for i in range(Nchoice)
         ]
         choiceRight = [
-            ActionChoiceClass("right", (i * 2 * math.pi / Nchoice),
+            ActionChoiceClass("right", (i * 2*np.pi / Nchoice),
                               f['weightListCheckRight'][i], 0)
             for i in range(Nchoice)
         ]
@@ -500,12 +477,12 @@ def updateModelParams(Nchoice, simulateStroke, simulateRehab, simulateFU, N,
                     f['weight_extent_R'][i])  # update activity of each cell
 
             choiceLeft = [
-                ActionChoiceClass("left", (i * 2 * math.pi / Nchoice),
+                ActionChoiceClass("left", (i * 2*np.pi / Nchoice),
                                   f['weightListCheckLeft'][i], 0)
                 for i in range(Nchoice)
             ]
             choiceRight = [
-                ActionChoiceClass("right", (i * 2 * math.pi / Nchoice),
+                ActionChoiceClass("right", (i * 2*np.pi / Nchoice),
                                   f['weightListCheckRight'][i], 0)
                 for i in range(Nchoice)
             ]
@@ -529,11 +506,11 @@ def updateModelParams(Nchoice, simulateStroke, simulateRehab, simulateFU, N,
 
             # Weights should be initialized to...
             choiceLeft = [
-                ActionChoiceClass("left", (i * 2 * math.pi / Nchoice), 0.5, 0)
+                ActionChoiceClass("left", (i * 2*np.pi / Nchoice), 0.5, 0)
                 for i in range(Nchoice)
             ]
             choiceRight = [
-                ActionChoiceClass("right", (i * 2 * math.pi / Nchoice), 0.5, 0)
+                ActionChoiceClass("right", (i * 2*np.pi / Nchoice), 0.5, 0)
                 for i in range(Nchoice)
             ]
 
