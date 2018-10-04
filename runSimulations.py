@@ -31,6 +31,14 @@ def getDiffAngle(a, b):
     return min(a - b, a - b + 2*np.pi, a - b - 2*np.pi, key=abs)
 
 
+def getBounded(direction):
+    if (direction >= (2*np.pi)):
+        direction = direction - (2*np.pi)
+    else:
+        if (direction < 0):
+            direction = direction + (2*np.pi)
+
+
 def runSimulations(
     UI,
     UseDependentLearning,
@@ -177,7 +185,7 @@ def runSimulations(
             leftCortex_extent, rightCortex_extent, newExtentL, newExtentR,
             newdAngle)
 
-        while (choosenHand == -1):
+        while (choosenHand == -1):  # No decision yet
             currT = int(round(time.time() * 1000))
 
             [energies, angleShoulder,
@@ -192,25 +200,22 @@ def runSimulations(
                 directionLeft, directionRight, 0, Exploration_Level)
             direc_errorR = getDiffAngle(newdAngle, directionRight)
             direc_errorL = getDiffAngle(newdAngle, directionLeft)
+            targetX = np.cos(newdAngle) / (np.sqrt(np.cos(newdAngle)**2 + np.sin(newdAngle)**2)) / 3.
+            targetY = np.sin(newdAngle) / (np.sqrt(np.cos(newdAngle)**2 + np.sin(newdAngle)**2)) / 3. + 0.4
 
-            # Show 5 consecutive trials
+            # Show pre-trial in 5 consecutive trials
             if (e >= in_showTrial1
                     and e < in_showTrial1 + 6) or (e >= in_showTrial2
                                                    and e < in_showTrial2 + 6):
                 ac, pacR, pacL = UI.play_trial(
                     angleShoulder[choosenHand], angleElbow[choosenHand],
-                    np.cos(newdAngle) /
-                    (np.sqrt(np.cos(newdAngle)**2 + np.sin(newdAngle)**2)) /
-                    3.,
-                    np.sin(newdAngle) /
-                    (np.sqrt(np.cos(newdAngle)**2 + np.sin(newdAngle)**2)) / 3.
-                    + 0.4, choosenHand, acR, acL, pacR, pacL, ac, expRewardR,
-                    expRewardL, startTime, currT, e, False)
+                    targetX, targetY, choosenHand, acR, acL, pacR, pacL, ac, expRewardR, expRewardL, startTime, currT, e)
 
             # New method to select arm based on interactive race model
             [choosenHand, acL, acR] = CompetingAccumulators(
                 acL, acR, energies, expRewardL, expRewardR)
 
+        # Log variables per trial
         rt.append(currT - startTime)
         choosen_per_trial.append(choosenHand)
         angle_per_trial.append(newdAngle)
@@ -224,79 +229,44 @@ def runSimulations(
         energy_R.append(energies[1])
 
         if (simulateRehab):
-            STEER_help = STEER
-            directionRight = directionRight + (direc_errorR * STEER_help)
+            STEER_help = STEER  # reduce directional error
+            directionRight = getBounded(directionRight + (direc_errorR * STEER_help))
 
-            if (directionRight >= (2*np.pi)):
-                directionRight = directionRight - (2*np.pi)
-            else:
-                if (directionRight < 0):
-                    directionRight = directionRight + (2*np.pi)
-
-            if (np.random.uniform(0, 1) < FORCED_TRIAL):
+            if (np.random.uniform(0, 1) < FORCED_TRIAL):  # Force arm use
                 choosenHand = 1
 
+        # show trial in 5 consecutive trials
         if (e >= in_showTrial1
                 and e < in_showTrial1 + 6) or (e >= in_showTrial2
                                                and e < in_showTrial2 + 6):
             for step in range(len(angleShoulder)):
-                ac, pacR, pacL = UI.play_trial(
-                    angleShoulder[step, choosenHand],
-                    angleElbow[step, choosenHand],
-                    np.cos(newdAngle) /
-                    (np.sqrt(np.cos(newdAngle)**2 + np.sin(newdAngle)**2)) /
-                    3.,
-                    np.sin(newdAngle) /
-                    (np.sqrt(np.cos(newdAngle)**2 + np.sin(newdAngle)**2)) / 3.
-                    + 0.4, choosenHand, acR, acL, pacR, pacL, ac, expRewardR,
-                    expRewardL, startTime, currT, e, True)
+                ac, pacR, pacL = UI.play_trial(angleShoulder[step, choosenHand], angleElbow[step, choosenHand], targetX, targetY, choosenHand, acR, acL, pacR, pacL, ac, expRewardR, expRewardL, startTime, currT, e)
 
-        if (e == trials - 1):
-            for p in range(len(choiceLeft)):
-                weightListCheckLeft.append(choiceLeft[p].weight)
-                weightListCheckRight.append(choiceRight[p].weight)
-
+        # Apply learning rules:
         if (choosenHand == 1):
+            # right arm
             actualReward = math.exp(-((direc_errorR**2) / 0.2**2)) - (math.sqrt(errorRight_e**2) * 0.1)
-        else:
-            actualReward = math.exp(-((direc_errorL**2) / 0.2**2)) - (math.sqrt(errorLeft_e**2) * 0.1)
-
-        actualReward_logs.append(actualReward)
-
-        predictionErrorL = actualReward - expRewardL
-        predictionErrorR = actualReward - expRewardR
-
-        # Apply learning rule (RB) without crossed lateralization
-        if (choosenHand == 1):
-            # cortex left
+            predictionErrorR = actualReward - expRewardR
             for i in range(len(choiceRight)):
                 choiceRight[i].weight += ReinforcementBasedLearning * \
                     predictionErrorR * math.exp(
                         -(getDiffAngle(newdAngle, choiceRight[i].center)**2 / (np.pi / 10)**2))
-
-        if (choosenHand == 0):
-            # cortex right
-            for i in range(len(choiceRight)):
-                choiceLeft[i].weight += ReinforcementBasedLearning * \
-                    predictionErrorL * math.exp(
-                        -(getDiffAngle(newdAngle, choiceLeft[i].center)**2 / (np.pi / 10)**2))
-
-        # Store trial state and apply learning rule to improve extent conding
-        # with crossed lateralization
-        if (choosenHand == 1):
-            sensitivityUpdateLeft = []
-            sumOfSquareActivitiesLeft = 0
+            # Left motor cortex
             for i in range(len(leftCortex)):
-                sumOfSquareActivitiesLeft += leftCortex[i].activity
                 sensitivityUpdateLeft.append(math.degrees(leftCortex[i].learningRuleFunc(directionRight, newdAngle, ErrorBasedLearning, UseDependentLearning)))
             for i in range(len(leftCortex_extent)):
                 leftCortex_extent[i].learningRuleFunc_extent(errorLeft_e)
 
         if (choosenHand == 0):
-            sensitivityUpdateRight = []
-            sumOfSquareActivitiesRight = 0
+            # left arm
+            actualReward = math.exp(-((direc_errorL**2) / 0.2**2)) - (math.sqrt(errorLeft_e**2) * 0.1)
+            predictionErrorL = actualReward - expRewardL
+            for i in range(len(choiceRight)):
+                choiceLeft[i].weight += ReinforcementBasedLearning * \
+                    predictionErrorL * math.exp(
+                        -(getDiffAngle(newdAngle, choiceLeft[i].center)**2 / (np.pi / 10)**2))
+            # Right motor cortex
             for i in range(len(rightCortex)):
-                sumOfSquareActivitiesRight += rightCortex[i].activity
                 sensitivityUpdateRight.append(math.degrees(rightCortex[i].learningRuleFunc(directionLeft, newdAngle, ErrorBasedLearning, UseDependentLearning)))
             for i in range(len(rightCortex_extent)):
                 rightCortex_extent[i].learningRuleFunc_extent(errorRight_e)
@@ -308,7 +278,7 @@ def runSimulations(
     UI.progressbar["value"] = trials
     UI.progressbar.update()
 
-    # Collect data of model current state
+    # Collect data of model current state for logging
     p_right = 0
     p_left = 0
     probability_right = []
@@ -325,6 +295,12 @@ def runSimulations(
     energy_L = []
     energy_R = []
     possibleAngles = np.arange(0, 360, 360 / 500.)
+
+    actualReward_logs.append(actualReward)
+
+    for p in range(len(choiceLeft)):
+        weightListCheckLeft.append(choiceLeft[p].weight)
+        weightListCheckRight.append(choiceRight[p].weight)
 
     for i in range(len(possibleAngles)):
         angle = math.radians(possibleAngles[i])

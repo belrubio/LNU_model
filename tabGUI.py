@@ -566,8 +566,7 @@ class tabGUI(tk.Frame):
                    expR_L=0,
                    startTime=0,
                    currentT=0,
-                   trialNow=0,
-                   flag=False):
+                   trialNow=0):
         # If this is the 6th trial from onset then stop playing animations
         if (trialNow == int(self.entries[6].get()) + 5) or (
                 trialNow == int(self.entries[7].get()) + 5):
