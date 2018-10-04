@@ -27,21 +27,18 @@ energies = [0, 0]
 expRewardL = 0
 expRewardR = 0
 
-
-def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
-                   in_showTrial1, in_showTrial2, simulateStroke, simulateRehab,
-                   simulateFU, FORCED_TRIAL, GAIN, STEER):
+def runSimulations(UI, UseDependentLearning, ErrorBasedLearning, ReinforcementBasedLearning, Exploration_Level, in_RD, trials, in_showTrial1, in_showTrial2, simulateStroke, simulateRehab, simulateFU, FORCED_TRIAL, GAIN, STEER):
     """Generates simulations,
     when done it plots and saves json files of the final model state.
 
     Parameters:
-        in_UDLR (float): Use-dependent learning rate
-        in_EBLR (float): Error-based learning rate
-        in_RBLR (float): Reinforcement-based learning rate
-        in_EL (float): Exploration Level or Noise in the hand \
+        UseDependentLearning (float): Use-dependent learning rate
+        ErrorBasedLearning (float): Error-based learning rate
+        ReinforcementBasedLearning (float): Reinforcement-based learning rate
+        Exploration_Level (float): Exploration Level or Noise in the hand \
         selection decision making
         in_RD (float): Non-Paretic Arm Bias/Hand Dominance (currently not used)
-        in_trials (int): Number of trials to simulate
+        trials (int): Number of trials to simulate
         in_showTrial1 (int): Trial onset to play animation fo simulation
         in_showTrial2 (int): 2nd Trial onset to play animation fo simulation
         simulateStroke (bool): True = Trials of treatment
@@ -55,12 +52,6 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
         reduction of the paretic limb movement.
 
     """
-
-    trials = in_trials
-    Exploration_Level = in_EL
-    ErrorBasedLearning = in_EBLR
-    UseDependentLearning = in_UDLR
-    ReinforcementBasedLearning = in_RBLR
 
     energies = [0, 0]
     sensitivityUpdateRight = []
@@ -112,14 +103,10 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
     weightListCheckRight = []
 
     nInput = 250  # Number of possible angles in range 0 to 360
-    possibleAngles = [(i * float(360.00 / nInput)) for i in range(nInput)]
+    possibleAngles = np.linspace(0.0, 360.0, nInput)
 
     # Shuffle PissibleAnles
-    for x in range(nInput):
-        auxShuffle = int(random.uniform(0, nInput))
-        auxShuffle_2 = possibleAngles[auxShuffle]
-        possibleAngles[auxShuffle] = possibleAngles[x]
-        possibleAngles[x] = auxShuffle_2
+    np.random.shuffle(possibleAngles)
 
     for e in range(trials):
 
@@ -139,16 +126,14 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
                 possibleAngles[x] = auxShuffle_2
 
         # Vector to target
-        a = [(-0.2 + math.cos(newdAngle)), (math.sin(newdAngle))]
-        newExtentR = np.linalg.norm(a)
-        b = [(0.2 + math.cos(newdAngle)), (math.sin(newdAngle))]
-        newExtentL = np.linalg.norm(b)
+        newExtentR= np.linalg.norm((-0.2+np.cos(newdAngle))+ 1j * np.sin(newdAngle))
+        newExtentL= np.linalg.norm((0.2+np.cos(newdAngle)) + 1j * np.sin(newdAngle))
 
         # NewExtentLeft is the actual extent of the optimal movement for
         # the right hand/left cortex
         if (simulateRehab):
             # keep applying gain
-            newExtentL = newExtentL - (newExtentL * GAIN)
+            newExtentL -= newExtentL * GAIN
 
         startTime = int(round(time.time() * 1000))
         choosenHand = -1
@@ -305,7 +290,7 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
             sumOfSquareActivitiesLeft = 0
             for i in range(len(leftCortex)):
                 sumOfSquareActivitiesLeft += leftCortex[i].activity
-                sensitivityUpdateLeft.append(math.degrees(leftCortex[i].learningRuleFunc(directionRight, newdAngle, in_EBLR, in_UDLR)))
+                sensitivityUpdateLeft.append(math.degrees(leftCortex[i].learningRuleFunc(directionRight, newdAngle, ErrorBasedLearning, UseDependentLearning)))
             for i in range(len(leftCortex_extent)):
                 leftCortex_extent[i].learningRuleFunc_extent(errorLeft_e)
 
@@ -314,7 +299,7 @@ def runSimulations(UI, in_UDLR, in_EBLR, in_RBLR, in_EL, in_RD, in_trials,
             sumOfSquareActivitiesRight = 0
             for i in range(len(rightCortex)):
                 sumOfSquareActivitiesRight += rightCortex[i].activity
-                sensitivityUpdateRight.append(math.degrees(rightCortex[i].learningRuleFunc(directionLeft, newdAngle, in_EBLR, in_UDLR)))
+                sensitivityUpdateRight.append(math.degrees(rightCortex[i].learningRuleFunc(directionLeft, newdAngle, ErrorBasedLearning, UseDependentLearning)))
             for i in range(len(rightCortex_extent)):
                 rightCortex_extent[i].learningRuleFunc_extent(errorRight_e)
 

@@ -332,7 +332,7 @@ class tabGUI(tk.Frame):
             y_LEFT = self.movingaverage(np.abs(error_left), window)
             y_RIGHT = self.movingaverage(np.abs(error_right), window)
 
-            self.fig = Figure(figsize=(5, 3))
+            self.fig = plt.Figure(figsize=(5, 3))
             self.fig.suptitle('Directional Error')
             self.fig.patch.set_facecolor('white')
             ax = self.fig.add_subplot(111, polar=False)
@@ -359,7 +359,7 @@ class tabGUI(tk.Frame):
             self.canvas.draw()
             self.canvas.get_tk_widget().pack(side='left', fill='y', expand=True)
 
-            self.fig = Figure(figsize=(5, 3))
+            self.fig = plt.Figure(figsize=(5, 3))
             self.fig.suptitle('Right hand use)')
             self.fig.patch.set_facecolor('white')
             ax = self.fig.add_subplot(111, polar=False)
@@ -380,7 +380,7 @@ class tabGUI(tk.Frame):
 
         else:
 
-            self.fig = Figure(figsize=(2.4, 3.6))
+            self.fig = plt.Figure(figsize=(2.4, 3.6))
             self.fig.suptitle('\nCost\n')
             self.fig.patch.set_facecolor('white')
             ax = self.fig.add_subplot(111, polar=True)
@@ -407,7 +407,7 @@ class tabGUI(tk.Frame):
             self.canvas.get_tk_widget().pack(side='left', fill='y', expand=True)
 
             # Figure 2
-            self.fig2 = Figure(figsize=(2.4, 3.6))
+            self.fig2 = plt.Figure(figsize=(2.4, 3.6))
             self.fig2.suptitle('\nProbabilities\n')
             self.fig2.patch.set_facecolor('white')
             ax2 = self.fig2.add_subplot(111, polar=True)
@@ -435,7 +435,7 @@ class tabGUI(tk.Frame):
 
 
             # Figure 3
-            self.fig3 = Figure(figsize=(2.4, 3.6))
+            self.fig3 = plt.Figure(figsize=(2.4, 3.6))
             self.fig3.suptitle('\nExpected Reward\n')
             self.fig3.patch.set_facecolor('white')
             ax3 = self.fig3.add_subplot(111, polar=True)
