@@ -17,9 +17,9 @@ Implementation of a computational functional model of recovery after stroke that
 
 ### **Getting Started**
 
-If you are interested in obtaining the program and running it in your machine, you can download an executable file: 
-- MAC OSX
-- Windows
+If you are interested in obtaining the program and running it in your machine, you can download an executable file from :
+
+[https://github.com/belrubio/LNU_model/tree/master/dist/](https://github.com/belrubio/LNU_model/tree/master/dist/)
 
 Please continue reading if you are interested in the source code of this project. The following instructions will get you a copy of the ***Leaned Non-Use Model*** project up and running on your local machine for development and testing purposes.
 
@@ -139,7 +139,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Belén Rubio Ballester** - *Initial work* - [https://www.belenrubioballester.com](https://www.belen.rubio.ballester.com)
+* **Belén Rubio Ballester** - *Main work* - [https://www.belenrubioballester.com](https://www.belenrubioballester.com)
 * **Diogo Santos Pata** - *Contributor* [https://www.diogosantospata.com](http://www.diogosantospata.com)
 
 ## License
